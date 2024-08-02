@@ -12,6 +12,31 @@
 
 #include "minishell.h"
 
+char	*ft_heredoc_name(void)
+{
+	static int	i = 1;
+	char		*ret;
+	char		*num;
+
+	if (i == 1)
+	{
+		ret = ft_strdup(".heredoc");
+		if (!ret)
+			return (NULL);
+		i++;
+		return (ret);
+	}
+	num = ft_itoa(i);
+	if (!num)
+		return (NULL);
+	ret = ft_strjoin(".heredoc", num);
+	if (!ret)
+		return (NULL);
+	free(num);
+	i++;
+	return (ret);
+}
+
 void	ft_create_heredoc(char *delimiter, char *filename)
 {
 	int		fd;
@@ -27,7 +52,11 @@ void	ft_create_heredoc(char *delimiter, char *filename)
 		if (ft_strncmp(buf, delimiter, ft_strlen(delimiter)))
 		{
 			if (!str)
-					str = ft_strdup(buf);
+			{
+				str = ft_strdup(buf);
+				if (!str)
+					write(2, "eror\n", 5);
+			}
 			else
 					str = ft_strjoin(str, buf);
 			free(buf);

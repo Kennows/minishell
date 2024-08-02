@@ -105,6 +105,8 @@ t_lex	*ft_tokenize(char *cmd)
 	tokens = NULL;
 	i = 0;
 	temp = ft_token_split(cmd, ' ');
+	if (!temp)
+		return (NULL);
 	while (temp[i] != NULL)
 		tokens = ft_add_token(tokens, temp[i++]);
 	i = 0;

@@ -135,17 +135,20 @@ t_lex	*ft_parse_redirect_in(t_command *cmd, t_lex *current_token, t_file **file)
 t_lex	*ft_parse_heredoc(t_command *cmd, t_lex *current_token, t_file **file)
 {
 	t_file		*temp;
-	static int	i = 0;
+	char		*name;
 
 	temp = NULL;
 	if (current_token->next == NULL || \
 		cmd->token_end->index <= current_token->index || \
 		current_token->next->type != WORD)
 		write(2, "minishell:  syntax error near unexpected token `<<'\n", 50);
-	temp = ft_new_file(temp, ft_itoa(i), OPEN);
+	name = ft_heredoc_name();
+	if (!name)
+		return (NULL);
+	temp = ft_new_file(temp, name, OPEN);
 	if (!temp)
 		return (NULL);
-	ft_create_heredoc(current_token->next->str, ft_itoa(i++));
+	ft_create_heredoc(current_token->next->str, name);
 	cmd->redir_in_file = temp;
 	if (*file == NULL)
 		*file = temp;
@@ -157,5 +160,6 @@ t_lex	*ft_parse_heredoc(t_command *cmd, t_lex *current_token, t_file **file)
 		temp->prev = *file;
 	}
 	current_token = ft_remove_redirection(cmd, current_token);
+	free(name);
 	return (current_token);
 }

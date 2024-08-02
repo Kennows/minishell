@@ -101,5 +101,6 @@ char			**ft_array_append(char **array, char *str);
 void			ft_print_tokens(t_lex *t);
 void			ft_free_files(t_file *files);
 void			ft_create_heredoc(char *delimiter, char *filename);
+char			*ft_heredoc_name(void);
 
 #endif
