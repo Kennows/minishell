@@ -104,9 +104,9 @@ int	main(void)
 			}
 			add_history(cmd);
 			tokens = ft_tokenize(cmd);
+			free(cmd);
 			if (!tokens)
 				continue ;
-			free(cmd);
 			ft_print_tokens(tokens);
 			table = ft_add_commands(tokens);
 			ft_print_table(table);
