@@ -12,18 +12,48 @@
 
 #include "minishell.h"
 
-t_file	*ft_new_file(t_file *file, char *name, t_file_type type)
+t_file	*ft_new_file(t_file *file, char **name, t_token_type type)
 {
 	file = malloc(sizeof(t_file));
 	if (!file)
+	{
+		free(*name);
+		write(2, "malloc failed while listing files\n", 34);
 		return (NULL);
-	file->name = ft_strdup(name);
+	}
+	file->name = ft_strdup(*name);
 	if (!file->name)
+	{
+		free(*name);
+		write(2, "malloc failed while listing files\n", 34);
 		return (NULL);
-	file->type = type;
+	}
+	if (type == REDIR_IN || type == HERE_DOC)
+		file->type = OPEN;
+	else if (type == REDIR_OUT)
+		file->type = CREATE;
+	else if (type == APPEND)
+		file->type = ADD_TO;
 	file->next = NULL;
 	file->prev = NULL;
 	return (file);
+}
+
+void	ft_add_file_to_list(t_command_table *table, t_file *temp)
+{
+	t_file	*file;
+
+	file = NULL;
+	if (table->files == NULL)
+		table->files = temp;
+	else
+	{
+		file = table->files;
+		while (file->next != NULL)
+			file = file->next;
+		file->next = temp;
+		temp->prev = file;
+	}
 }
 
 t_lex	*ft_remove_redirection(t_command *cmd, t_lex *current_token)
@@ -54,112 +84,60 @@ t_lex	*ft_remove_redirection(t_command *cmd, t_lex *current_token)
 	}
 }
 
-t_lex	*ft_parse_redirect_out(t_command *cmd, t_lex *current_token, t_file **file)
+int	ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table)
 {
 	t_file	*temp;
 
 	temp = NULL;
-	if (current_token->next == NULL || \
-		cmd->token_end->index <= current_token->index || \
-		current_token->next->type != WORD)
-		write(2, "minishell:  syntax error near unexpected token `>'\n", 50);
-	temp = ft_new_file(temp, current_token->next->str, CREATE);
+	if (!ft_redir_syntax_check(token, &cmd, &table))
+		return (0);
+	if ((*token)->type == HERE_DOC)
+	{
+		if (!ft_parse_heredoc(cmd, token, table))
+		{
+			ft_free_all(*token, cmd, table);
+			return (0);
+		}
+		else
+			return (1);
+	}
+	temp = ft_new_file(temp, &(*token)->next->str, (*token)->type);
 	if (!temp)
-		return (NULL);
+	{
+		ft_free_all(*token, cmd, table);
+		return (0);
+	}
 	cmd->redir_out_file = temp;
-	if (*file == NULL)
-		*file = temp;
-	else
-	{
-		while ((*file)->next != NULL)
-			*file = (*file)->next;
-		(*file)->next = temp;
-		temp->prev = *file;
-	}
-	current_token = ft_remove_redirection(cmd, current_token);
-	return (current_token);
+	ft_add_file_to_list(table, temp);
+	*token = ft_remove_redirection(cmd, *token);
+	return (1);
 }
 
-t_lex	*ft_parse_append(t_command *cmd, t_lex *current_token, t_file **file)
-{
-	t_file	*temp;
-
-	temp = NULL;
-	if (current_token->next == NULL || \
-		cmd->token_end->index <= current_token->index || \
-		current_token->next->type != WORD)
-		write(2, "minishell:  syntax error near unexpected token `>>'\n", 51);
-	temp = ft_new_file(temp, current_token->next->str, ADD_TO);
-	if (!temp)
-		return (NULL);
-	cmd->redir_out_file = temp;
-	if (*file == NULL)
-		*file = temp;
-	else
-	{
-		while ((*file)->next != NULL)
-			*file = (*file)->next;
-		(*file)->next = temp;
-		temp->prev = *file;
-	}
-	current_token = ft_remove_redirection(cmd, current_token);
-	return (current_token);
-}
-
-t_lex	*ft_parse_redirect_in(t_command *cmd, t_lex *current_token, t_file **file)
-{
-	t_file	*temp;
-
-	temp = NULL;
-	if (current_token->next == NULL || \
-		cmd->token_end->index <= current_token->index || \
-		current_token->next->type != WORD)
-		write(2, "minishell:  syntax error near unexpected token `<'\n", 50);
-	temp = ft_new_file(temp, current_token->next->str, OPEN);
-	if (!temp)
-		return (NULL);
-	cmd->redir_in_file = temp;
-	if (*file == NULL)
-		*file = temp;
-	else
-	{
-		while ((*file)->next != NULL)
-			*file = (*file)->next;
-		(*file)->next = temp;
-		temp->prev = *file;
-	}
-	current_token = ft_remove_redirection(cmd, current_token);
-	return (current_token);
-}
-
-t_lex	*ft_parse_heredoc(t_command *cmd, t_lex *current_token, t_file **file)
+int	ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table)
 {
 	t_file		*temp;
 	char		*name;
 
 	temp = NULL;
-	if (current_token->next == NULL || \
-		cmd->token_end->index <= current_token->index || \
-		current_token->next->type != WORD)
-		write(2, "minishell:  syntax error near unexpected token `<<'\n", 50);
 	name = ft_heredoc_name();
 	if (!name)
-		return (NULL);
-	temp = ft_new_file(temp, name, OPEN);
-	if (!temp)
-		return (NULL);
-	ft_create_heredoc(current_token->next->str, name);
-	cmd->redir_in_file = temp;
-	if (*file == NULL)
-		*file = temp;
-	else
 	{
-		while ((*file)->next != NULL)
-			*file = (*file)->next;
-		(*file)->next = temp;
-		temp->prev = *file;
+		write(2, "malloc failed while creating heredoc\n", 37); 
+		return (0);
 	}
-	current_token = ft_remove_redirection(cmd, current_token);
+	temp = ft_new_file(temp, &name, (*token)->type);
+	if (!temp)
+		return (0);
+	if (!ft_create_heredoc((*token)->next->str, name))
+	{
+		free(name);
+		free(temp->name);
+		free(temp);
+		return (0);
+	}
+	cmd->redir_in_file = temp;
+	ft_add_file_to_list(table, temp);
+	*token = ft_remove_redirection(cmd, *token);
 	free(name);
-	return (current_token);
+	return (1);
 }

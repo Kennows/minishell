@@ -16,6 +16,8 @@ void	ft_free_tokens(t_lex *tokens)
 {
 	t_lex	*temp;
 
+	while (tokens->prev != NULL)
+		tokens = tokens->prev;
 	while (tokens->next != NULL)
 	{
 		temp = tokens->next;
@@ -62,10 +64,17 @@ t_lex	*ft_new_token(char *str, int index)
 
 	head = malloc(sizeof(t_lex));
 	if (!head)
-		return (0);
+	{
+		write(2, "malloc failed while creating tokens\n", 36);
+		return (NULL);
+	}
 	head->str = ft_strdup(str);
 	if (!head->str)
-		write(2, "uh oh\n", 6);
+	{
+		free(head);
+		write(2, "malloc failed while creating tokens\n", 36);
+		return (NULL);
+	}
 	ft_token_type(head);
 	head->index = index;
 	head->next = NULL;
@@ -80,7 +89,11 @@ t_lex	*ft_add_token(t_lex *tokens, char *str)
 
 	i = 0;
 	if (tokens == NULL)
+	{
 		tokens = ft_new_token(str, i);
+		if (!tokens)
+			return (NULL);
+	}
 	else
 	{
 		current = tokens;
@@ -89,9 +102,11 @@ t_lex	*ft_add_token(t_lex *tokens, char *str)
 			current = current->next;
 			i++;
 		}
-		i++;
-		current->next = ft_new_token(str, i);
-		current->next->prev = current;
+		current->next = ft_new_token(str, ++i);
+		if (!current->next)
+			ft_free_tokens(tokens);
+		else
+			current->next->prev = current;
 	}
 	return (tokens);
 }
@@ -108,10 +123,17 @@ t_lex	*ft_tokenize(char *cmd)
 	if (!temp)
 		return (NULL);
 	while (temp[i] != NULL)
-		tokens = ft_add_token(tokens, temp[i++]);
-	i = 0;
-	while (temp[i] != NULL)
+	{
+		tokens = ft_add_token(tokens, temp[i]);
 		free(temp[i++]);
+		if (!tokens)
+		{
+			while (temp[i] != NULL)
+				free(temp[i++]);
+			free(temp);
+			return (NULL);
+		}
+	}
 	free(temp);
 	return (tokens);
 }

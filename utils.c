@@ -135,6 +135,14 @@ void	ft_free_commands(t_command *cmd)
 	cmd = NULL;
 }
 
+void    ft_free_all(t_lex *token, t_command *cmd, t_command_table *table)
+{
+        ft_free_tokens(token);
+        ft_free_commands(cmd);
+        ft_free_files(table->files);
+        free(table);
+}
+
 void	ft_init_command(t_command *cmd)
 {
 	cmd->argv = NULL;

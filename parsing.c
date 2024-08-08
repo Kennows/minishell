@@ -20,51 +20,50 @@ t_command	*ft_parse_redirections(t_command *cmd, t_command_table *table)
 	while (current_token != NULL && cmd->token_end != NULL && \
 		current_token->index <= cmd->token_end->index)
 	{
-		if (current_token->type == REDIR_IN)
-			current_token = ft_parse_redirect_in(cmd, current_token, &table->files);
-		else if (current_token->type == REDIR_OUT)
-			current_token = ft_parse_redirect_out(cmd, current_token, &table->files);
-		else if (current_token->type == APPEND)
-			current_token = ft_parse_append(cmd, current_token, &table->files);
-		else if (current_token->type == HERE_DOC)
-			current_token = ft_parse_heredoc(cmd, current_token, &table->files);
-		else
+		if (current_token->type == WORD || current_token->type == NUMBER)
 			current_token = current_token->next;
+		else if (!ft_handle_redir(cmd, &current_token, table))
+			return (NULL);
 	}
 	if (cmd->token_end && cmd->token_start)
 		cmd->argc = (cmd->token_end->index - cmd->token_start->index) + 1;
 	else
 		cmd->argc = 1;	
 	if (cmd->next != NULL)
+	{
 		cmd->next = ft_parse_redirections(cmd->next, table);
+		if (!cmd->next)
+			return (NULL);
+	}
 	return (cmd);
 }
 
-t_command	*ft_parse_cmd_and_args(t_command *cmd)
+t_command	*ft_parse_cmd_and_args(t_command *cmd, t_lex *token)
 {
-	t_lex	*current_token;
 	t_lex	*temp;
 	int		i;
 
 	i = -1;
-	current_token = cmd->token_start;
-	if (current_token != NULL)
-		cmd->type = current_token->type;
+	if (token != NULL)
+		cmd->type = token->type;
 	cmd->argv = malloc(sizeof(char *) * (cmd->argc + 1));
 	if (!cmd->argv)
 		return (NULL);
-	while (++i < cmd->argc && current_token)
+	while (++i < cmd->argc && token)
 	{
-		cmd->argv[i] = ft_strdup(current_token->str);
+		cmd->argv[i] = ft_strdup(token->str);
 		if (!cmd->argv[i])
 			return (NULL);
-		temp = current_token->next;
-		ft_remove_token(current_token);
-		current_token = temp;
+		temp = token->next;
+		ft_remove_token(token);
+		token = temp;
 	}
 	cmd->argv[i] = NULL;
-	if (cmd->next != NULL)
-		cmd->next = ft_parse_cmd_and_args(cmd->next);
+	if (cmd->next == NULL)
+		return (cmd);
+	cmd->next = ft_parse_cmd_and_args(cmd->next, cmd->next->token_start);
+	if (!cmd->next)
+		return (NULL);
 	return (cmd);
 }
 
@@ -72,19 +71,16 @@ t_command	*ft_parse_pipes(t_command *head, t_lex *tokens, t_command *prev)
 {
 	head = malloc(sizeof(t_command));
 	if (!head)
-		return (0);
-	if (tokens->type == PIPE)
-		write(2, "minishell: syntax error near unexpected token `|'\n", 50);
-	head->token_start = tokens;
-	while (tokens->next != NULL && tokens->next->type != PIPE)
-		tokens = tokens->next;
-	head->token_end = tokens;
-	ft_init_command(head);
+	{
+		write(2, "malloc failed while parsing pipes\n", 34);
+		ft_free_tokens(tokens);
+		return (NULL);
+	}
+	if (!ft_pipe_syntax_check(&tokens, &head))
+		return (NULL);
 	head->prev = prev;
 	if (tokens->next != NULL)
 	{
-		if (tokens->next->next == NULL)
-			write(2, "minishell: syntax error near unexpected token `|'\n", 50);
 		ft_remove_token(tokens->next);
 		head->next = ft_parse_pipes(head->next, tokens->next, head);
 		if (!head->next)
@@ -98,26 +94,43 @@ t_command	*ft_parse_pipes(t_command *head, t_lex *tokens, t_command *prev)
 	return (head);
 }
 
-t_command_table	*ft_add_commands(t_lex *tokens)
+t_command_table *ft_create_cmd_table(t_command_table *table)
 {
-	t_command_table	*table;
+	table = malloc(sizeof(t_command_table));
+	if (!table)
+	{
+		write(2, "malloc failed while creating command table\n", 43);
+		return (NULL);
+	}
+	table->commands = NULL;
+	table->files = NULL;
+	return (table);
+}
+
+t_command_table	*ft_add_commands(t_command_table *table, t_lex *tokens)
+{
 	t_command		*command;
 
 	command = NULL;
-	table = NULL;
-	table = malloc(sizeof(t_command_table));
+	table = ft_create_cmd_table(table);
 	if (!table)
 		return (NULL);
-	table->commands = NULL;
-	table->files = NULL;
 	table->commands = ft_parse_pipes(command, tokens, NULL);
 	if (!table->commands)
 		return (NULL);
 	puts("pipes handled");
 	command = table->commands;
 	command = ft_parse_redirections(command, table);
+	if (!command)
+		return (NULL);
 	puts("redirections handled");
-	command = ft_parse_cmd_and_args(command);
+	command = ft_parse_cmd_and_args(command, command->token_start);
+	if (!command)
+	{
+		write(2, "malloc failed while parsing cmds and args\n", 42);
+		ft_free_all(tokens, table->commands, table);
+		return (NULL);
+	}
 	puts("cmds handled");
 	puts("");
 	return (table);

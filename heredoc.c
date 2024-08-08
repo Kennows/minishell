@@ -30,43 +30,88 @@ char	*ft_heredoc_name(void)
 	if (!num)
 		return (NULL);
 	ret = ft_strjoin(".heredoc", num);
+	free(num);
 	if (!ret)
 		return (NULL);
-	free(num);
 	i++;
 	return (ret);
 }
 
-void	ft_create_heredoc(char *delimiter, char *filename)
+char	*ft_strappend(char *dest, char *src)
 {
-	int		fd;
+	char 	*new;
+	int	i;
+
+	if (!src)
+		return (dest);
+	if (dest == NULL)
+	{
+		dest = ft_strdup(src);
+		if (!dest)
+			return (NULL);
+		return (dest);
+	}
+	new = malloc(sizeof(char) * (ft_strlen(dest) + ft_strlen(src) + 1));
+	if (!new)
+	{
+		free(dest);
+		return (NULL);
+	}
+	i = ft_strlen(dest);
+	ft_strlcpy(new, dest, i);
+	i -= 1;
+	while (src[++i - ft_strlen(dest)] != '\0')
+		new[i] = src[i - ft_strlen(dest)];
+	free(dest);
+	return (new);
+}
+
+int	ft_write_in_heredoc(int fd, char *delimiter)
+{
 	char	*buf;
 	char	*str;
-	size_t	len;
 
 	str = NULL;
-	fd = open(filename, O_RDWR | O_CREAT, 0666);
+	buf = NULL;
 	while (1)
 	{
 		buf = readline(">");
 		if (ft_strncmp(buf, delimiter, ft_strlen(delimiter)))
 		{
-			if (!str)
-			{
-				str = ft_strdup(buf);
-				if (!str)
-					write(2, "eror\n", 5);
-			}
-			else
-					str = ft_strjoin(str, buf);
+			str = ft_strappend(str, buf);
 			free(buf);
+			if (!str)
+				return (0);
 		}
 		else
 		{
-			len = ft_strlen(str);
-			write(fd, str, len);
-			close(fd);
-			return ;
+			if (str)
+			{
+				write(fd, str, ft_strlen(str));
+				free(str);
+			}
+			free(buf);
+			return (1);
 		}
 	}
+}
+
+int	ft_create_heredoc(char *delimiter, char *filename)
+{
+	int		fd;
+
+	fd = open(filename, O_RDWR | O_CREAT, 0666);
+	if (fd == -1)
+	{
+		write(2, "error creating heredoc\n", 23);
+		return (0);
+	}
+	if (!ft_write_in_heredoc(fd, delimiter))
+	{
+		write(2, "error while writing in heredoc\n", 25);
+		close(fd);
+		return (0);
+	}
+	close(fd);
+	return (1);
 }

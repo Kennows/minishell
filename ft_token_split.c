@@ -25,18 +25,18 @@ static int	ft_find_end(const char *str, char c)
 	while (str[i] != c && str[i] != '\0' && str[i] != '<' \
 			&& str[i] != '>' && str[i] != '|')
 	{
-		if (str[i] == '"' || str[i] == '\'')
+		if (str[i] == '"')
+			while (str[++i] != '"' && str[i] != '\0')
+				continue ;
+		else if (str[i] == '\'')
+			while (str[++i] != '\'' && str[i] != '\0')
+				continue ;
+		if (str[i] == '\0')
 		{
-			i++;
-			if (str[i] == '"')
-				while (str[i] != '"' && str[i] != '\0')
-					i++;
-			if (str[i] == '\'')
-				while (str[i] != '\'' && str[i] != '\0')
-					i++;
+			write(2, "quotation syntax error\n", 23);
+			return (-1);
 		}
-		if (str[i] != '\0')
-			i++;
+		i++;
 	}
 	return (i);
 }
@@ -53,6 +53,8 @@ static char	**ft_allocate(char const *s, char c)
 	{
 		if (s[i] != c)
 			strings++;
+		if (ft_find_end(&s[i], c) == -1)
+			return (NULL);
 		i += ft_find_end(&s[i], c);
 		while (s[i] == c && s[i] != '\0')
 			i++;
@@ -61,7 +63,10 @@ static char	**ft_allocate(char const *s, char c)
 		return (NULL);
 	new = (char **)malloc(strings * sizeof(char *));
 	if (!new)
+	{
+		write(2, "malloc failed while splitting input\n", 36);
 		return (NULL);
+	}
 	return (new);
 }
 
@@ -92,6 +97,7 @@ static char	**ft_help_split(char **dst, char const *s, char c)
 			if (!dst[i])
 			{
 				ft_free_array(dst);
+				write(2, "malloc failed while splitting input\n", 36);
 				return (NULL);
 			}
 			ft_strlcpy(dst[i++], s, end - s + 1);
