@@ -113,4 +113,9 @@ int			ft_redir_syntax_check(t_lex **token, t_command **cmd, t_command_table **ta
 
 void    ft_free_all(t_lex *token, t_command *cmd, t_command_table *table);
 
+char	*ft_str_replace(char *str, char *substitute, int start, int end);
+char	*ft_replace_var(char *str, int start, int end, char *env);
+char	*ft_handle_env(char *str, int start);
+char	*ft_expand(char *str);
+
 #endif

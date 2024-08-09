@@ -20,7 +20,8 @@ t_command	*ft_parse_redirections(t_command *cmd, t_command_table *table)
 	while (current_token != NULL && cmd->token_end != NULL && \
 		current_token->index <= cmd->token_end->index)
 	{
-		if (current_token->type == WORD || current_token->type == NUMBER)
+		if (current_token->type == WORD || current_token->type == NUMBER || \
+			current_token->type == BUILT_IN)
 			current_token = current_token->next;
 		else if (!ft_handle_redir(cmd, &current_token, table))
 			return (NULL);
@@ -51,7 +52,7 @@ t_command	*ft_parse_cmd_and_args(t_command *cmd, t_lex *token)
 		return (NULL);
 	while (++i < cmd->argc && token)
 	{
-		cmd->argv[i] = ft_strdup(token->str);
+		cmd->argv[i] = ft_expand(ft_strdup(token->str));
 		if (!cmd->argv[i])
 			return (NULL);
 		temp = token->next;

@@ -21,7 +21,7 @@ t_file	*ft_new_file(t_file *file, char **name, t_token_type type)
 		write(2, "malloc failed while listing files\n", 34);
 		return (NULL);
 	}
-	file->name = ft_strdup(*name);
+	file->name = ft_expand(ft_strdup(*name));
 	if (!file->name)
 	{
 		free(*name);
