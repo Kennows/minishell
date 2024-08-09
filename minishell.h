@@ -19,6 +19,7 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 # include <fcntl.h>
+# include <signal.h>
 
 typedef enum s_token_type
 {
@@ -89,17 +90,27 @@ void			ft_init_command(t_command *cmd);
 t_command		*ft_parse_pipes(t_command *head, t_lex *tokens, t_command *prev);
 t_command		*ft_parse_redirections(t_command *cmd, t_command_table *table);
 t_lex			*ft_parse_redirect_in(t_command *cmd, t_lex *current_token, t_file **file);
-t_lex			*ft_parse_redirect_out(t_command *cmd, t_lex *current_token, t_file **file);
+int			ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table);
 t_lex			*ft_parse_append(t_command *cmd, t_lex *current_token, t_file **file);
-t_lex			*ft_parse_heredoc(t_command *cmd, t_lex *current_token, t_file **file);
-t_command_table	*ft_add_commands(t_lex *tokens);
+int			ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table);
+t_command_table	*ft_add_commands(t_command_table *table, t_lex *tokens);
 t_command		*ft_parse(t_lex *tokens);
 
 int				ft_isnumber(const char *str);
 char			**ft_array_append(char **array, char *str);
 
 void			ft_print_tokens(t_lex *t);
+
 void			ft_free_files(t_file *files);
-void			ft_create_heredoc(char *delimiter, char *filename);
+int			ft_create_heredoc(char *delimiter, char *filename);
+char			*ft_heredoc_name(void);
+
+//void			ft_sighandler(int signal);
+//void			ft_set_sig_handler(void);
+
+int			ft_pipe_syntax_check(t_lex **tokens, t_command **cmd);
+int			ft_redir_syntax_check(t_lex **token, t_command **cmd, t_command_table **table);
+
+void    ft_free_all(t_lex *token, t_command *cmd, t_command_table *table);
 
 #endif

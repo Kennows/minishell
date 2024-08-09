@@ -90,12 +90,12 @@ int	main(void)
 	t_lex			*tokens;
 	t_command_table	*table;
 	char			*cmd;
-
+	
 	while (1)
 	{
 		table = NULL;
 		cmd = readline("minishell$ ");
-		if (*cmd != '\0')
+		if (cmd != NULL)
 		{
 			if (!ft_strncmp(cmd, "exit", 5))
 			{
@@ -105,8 +105,12 @@ int	main(void)
 			add_history(cmd);
 			tokens = ft_tokenize(cmd);
 			free(cmd);
+			if (!tokens)
+				continue ;
 			ft_print_tokens(tokens);
-			table = ft_add_commands(tokens);
+			table = ft_add_commands(table, tokens);
+			if (!table)
+				continue ;
 			ft_print_table(table);
 			ft_print_files(table->files);
 			puts("");
