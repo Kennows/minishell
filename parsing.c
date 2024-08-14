@@ -45,8 +45,6 @@ t_command	*ft_parse_cmd_and_args(t_command *cmd, t_lex *token)
 	int		i;
 
 	i = -1;
-	if (token != NULL)
-		cmd->type = token->type;
 	cmd->argv = malloc(sizeof(char *) * (cmd->argc + 1));
 	if (!cmd->argv)
 		return (NULL);
@@ -60,6 +58,7 @@ t_command	*ft_parse_cmd_and_args(t_command *cmd, t_lex *token)
 		token = temp;
 	}
 	cmd->argv[i] = NULL;
+	ft_command_type(cmd);
 	if (cmd->next == NULL)
 		return (cmd);
 	cmd->next = ft_parse_cmd_and_args(cmd->next, cmd->next->token_start);

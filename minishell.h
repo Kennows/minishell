@@ -117,5 +117,6 @@ char	*ft_str_replace(char *str, char *substitute, int start, int end);
 char	*ft_replace_var(char *str, int start, int end, char *env);
 char	*ft_handle_env(char *str, int start);
 char	*ft_expand(char *str);
+void	ft_command_type(t_command *cmd);
 
 #endif

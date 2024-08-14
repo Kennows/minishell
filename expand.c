@@ -39,20 +39,37 @@ char	*ft_replace_var(char *str, int start, int end, char *env)
 	}
 	else
 		new = str;
-	while (new[end] && new[end] != '$')
-		end++;
-	if (new[end] == '$')
+	if (new[end] != '\0')
 		new = ft_handle_env(new, end);
 	return (new);
 }
+
+int	ft_find_env_start(char *str, int i)
+{
+	int	quoted;
+
+	quoted = 0;
+	while (str[i] && str[i] != '$')
+	{
+		if (str[i] == '"' && quoted == 0)
+			quoted = 1;
+		else if (str[i] == '"' && quoted == 1)
+			quoted = 0;
+		if (str[i] == '\'' && quoted == 0)
+			while (str[++i] != '\'')
+				continue ;
+		i++;
+	}
+	return (i);
+}
+
 
 char	*ft_handle_env(char *str, int start)
 {
 	int	end;
 	char	*var;
 
-	while (str[start] != '\0' && str[start] != '$')
-		start++;
+	start = ft_find_env_start(str, start);
 	if (str[start] == '$')
 	{
 		end = start + 1;
@@ -72,25 +89,52 @@ char	*ft_handle_env(char *str, int start)
 	return (str);
 }
 
-char	*ft_remove_quotes(char *str)
+char	*ft_remove_quotes(char *str, char *new, char q, int *start)
 {
-	char	*new;
-	int	len;
 	int	i;
+	int	quotes;
 
+	quotes = 0;
 	i = -1;
-	len = ft_strlen(str);
-	new = malloc(sizeof(char) * (len - 1));
-	if (!new)
+	while (++i < *start)
+		new[i] = str[i];
+	while (str[i + quotes])
 	{
-		write(2, "malloc failed while removing quotes\n", 36);
-		free(str);
-		return (NULL);
+		if (str[i + quotes] == q && quotes < 2)
+		{
+			quotes++;
+			if (quotes == 2)
+				*start = i;
+		}
+		new[i] = str[i + quotes];
+		i++;
 	}
-	while (++i < (len - 2))
-		new[i] = str[i + 1];
 	new[i] = '\0';
 	free(str);
+	return (new);
+}
+
+char	*ft_handle_quotes(char *str, int start)
+{
+	char	*new;
+
+	while (str[start] && str[start] != '"' && str[start] != '\'')
+		start++;
+	if (str[start] == '\0')
+		return (str);
+	new = malloc(sizeof(char) * (ft_strlen(str) - 1));
+	if (!new)
+	{
+		free(str);
+		write(2, "malloc failed while removing quotes\n", 36);
+		return (NULL);
+	}
+	if (str[start] == '"')
+		new = ft_remove_quotes(str, new, '"', &start);
+	else if (str[start] == '\'')
+		new = ft_remove_quotes(str, new, '\'', &start);
+	if (new[start] != '\0')
+		new = ft_handle_quotes(new, start);
 	return (new);
 }
 
@@ -101,17 +145,10 @@ char	*ft_expand(char *str)
 	new = NULL;
 	if (str)
 	{
-		if (str[0] == '"')
-		{
-			new = ft_handle_env(str, 0);
-			if (!new)
-				return (NULL);
-			new = ft_remove_quotes(new);
-		}
-		else if (str[0] == '\'')
-			new = ft_remove_quotes(str);
-		else
-			new = ft_handle_env(str, 0);
+		new = ft_handle_env(str, 0);
+		if (!new)
+			return (NULL);
+		new = ft_handle_quotes(new, 0);
 		if (!new)
 			return (NULL);
 		return (new);

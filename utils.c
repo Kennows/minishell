@@ -12,6 +12,23 @@
 
 #include "minishell.h"
 
+void	ft_command_type(t_command *cmd)
+{
+	if (cmd->argv[0])
+	{
+		if (!ft_strncmp(cmd->argv[0], "echo", 5) || \
+			!ft_strncmp(cmd->argv[0], "cd", 3) || \
+			!ft_strncmp(cmd->argv[0], "pwd", 4) || \
+			!ft_strncmp(cmd->argv[0], "export", 7) || \
+			!ft_strncmp(cmd->argv[0], "unset", 6) || \
+			!ft_strncmp(cmd->argv[0], "env", 4) || \
+			!ft_strncmp(cmd->argv[0], "exit", 5))
+			cmd->type = BUILT_IN;
+		else
+			cmd->type = WORD;
+	}
+}
+
 int	ft_isnumber(const char *str)
 {
 	if (*str == '-' || *str == '+')
