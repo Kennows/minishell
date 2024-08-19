@@ -100,7 +100,7 @@ char	*ft_remove_quotes(char *str, char *new, char q, int *start)
 		new[i] = str[i];
 	while (str[i + quotes])
 	{
-		if (str[i + quotes] == q && quotes < 2)
+		while (str[i + quotes] == q && quotes < 2)
 		{
 			quotes++;
 			if (quotes == 2)

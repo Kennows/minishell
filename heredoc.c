@@ -51,17 +51,18 @@ char	*ft_strappend(char *dest, char *src)
 			return (NULL);
 		return (dest);
 	}
-	new = malloc(sizeof(char) * (ft_strlen(dest) + ft_strlen(src) + 1));
+	new = malloc(sizeof(char) * (ft_strlen(dest) + ft_strlen(src) + 2));
 	if (!new)
 	{
 		free(dest);
 		return (NULL);
 	}
 	i = ft_strlen(dest);
-	ft_strlcpy(new, dest, i);
-	i -= 1;
-	while (src[++i - ft_strlen(dest)] != '\0')
-		new[i] = src[i - ft_strlen(dest)];
+	ft_strlcpy(new, dest, i + 1);
+	new[i++] = '\n';
+	while (*src != '\0')
+		new[i++] = *src++;
+	new[i] = '\0';
 	free(dest);
 	return (new);
 }
@@ -76,7 +77,7 @@ int	ft_write_in_heredoc(int fd, char *delimiter)
 	while (1)
 	{
 		buf = readline(">");
-		if (ft_strncmp(buf, delimiter, ft_strlen(delimiter)))
+		if (ft_strncmp(buf, delimiter, ft_strlen(delimiter) + 1))
 		{
 			str = ft_strappend(str, buf);
 			free(buf);
@@ -100,7 +101,7 @@ int	ft_create_heredoc(char *delimiter, char *filename)
 {
 	int		fd;
 
-	fd = open(filename, O_RDWR | O_CREAT, 0666);
+	fd = open(filename, O_RDWR | O_CREAT | O_TRUNC);
 	if (fd == -1)
 	{
 		write(2, "error creating heredoc\n", 23);
