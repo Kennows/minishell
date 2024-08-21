@@ -102,7 +102,7 @@ char			**ft_array_append(char **array, char *str);
 void			ft_print_tokens(t_lex *t);
 
 void			ft_free_files(t_file *files);
-int			ft_create_heredoc(char *delimiter, char *filename);
+int			ft_create_heredoc(char **delimiter, char *filename);
 char			*ft_heredoc_name(void);
 
 //void			ft_sighandler(int signal);
@@ -114,8 +114,10 @@ int			ft_redir_syntax_check(t_lex **token, t_command **cmd, t_command_table **ta
 void    ft_free_all(t_lex *token, t_command *cmd, t_command_table *table);
 
 char	*ft_str_replace(char *str, char *substitute, int start, int end);
-char	*ft_replace_var(char *str, int start, int end, char *env);
-char	*ft_handle_env(char *str, int start);
+char	*ft_replace_var(char *str, int start, int end, int heredoc);
+char	*ft_remove_quotes(char *str, char *new, char q, int *start);
+char	*ft_handle_quotes(char *str, int start);
+char	*ft_handle_env(char *str, int start, int heredoc);
 char	*ft_expand(char *str);
 void	ft_command_type(t_command *cmd);
 

@@ -124,7 +124,8 @@ void	ft_remove_token(t_lex *token)
 		current = current->next;
 		current->index--;
 	}
-	free(token->str);
+	if (token->str)
+		free(token->str);
 	free(token);
 	token = NULL;
 }

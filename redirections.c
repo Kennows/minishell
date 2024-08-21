@@ -128,7 +128,7 @@ int	ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table)
 	temp = ft_new_file(temp, &name, (*token)->type);
 	if (!temp)
 		return (0);
-	if (!ft_create_heredoc((*token)->next->str, name))
+	if (!ft_create_heredoc(&(*token)->next->str, name))
 	{
 		free(name);
 		free(temp->name);

@@ -67,47 +67,71 @@ char	*ft_strappend(char *dest, char *src)
 	return (new);
 }
 
-int	ft_write_in_heredoc(int fd, char *delimiter)
+int	ft_readline_heredoc(char **str, char *delimiter, int quoted)
 {
 	char	*buf;
-	char	*str;
 
-	str = NULL;
 	buf = NULL;
 	while (1)
 	{
 		buf = readline(">");
 		if (ft_strncmp(buf, delimiter, ft_strlen(delimiter) + 1))
 		{
-			str = ft_strappend(str, buf);
+			if (!quoted)
+			{
+				buf = ft_handle_env(buf, 0, 1);
+				if (!buf)
+					return (0);
+			}
+			*str = ft_strappend(*str, buf);
 			free(buf);
-			if (!str)
+			if (!*str)
 				return (0);
 		}
 		else
 		{
-			if (str)
-			{
-				write(fd, str, ft_strlen(str));
-				free(str);
-			}
 			free(buf);
 			return (1);
 		}
 	}
 }
 
-int	ft_create_heredoc(char *delimiter, char *filename)
+int	ft_write_in_heredoc(int fd, char **delim)
 {
-	int		fd;
+	char	*str;
+	int	quoted;
 
-	fd = open(filename, O_RDWR | O_CREAT | O_TRUNC);
+	quoted = 1;
+	str = NULL;
+	if (!ft_strchr(*delim, '"') && !ft_strchr(*delim, '\''))
+		quoted = 0;
+	else
+	{
+		*delim = ft_handle_quotes(*delim, 0);
+		if (!*delim)
+			return (0);
+	}
+	if (!ft_readline_heredoc(&str, *delim, quoted))
+		return (0);
+	if (str)
+	{
+		write(fd, str, ft_strlen(str));
+		free(str);
+	}
+	return (1);
+}
+
+int	ft_create_heredoc(char **delim, char *filename)
+{
+	int	fd;
+
+	fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0666);
 	if (fd == -1)
 	{
 		write(2, "error creating heredoc\n", 23);
 		return (0);
 	}
-	if (!ft_write_in_heredoc(fd, delimiter))
+	if (!ft_write_in_heredoc(fd, delim))
 	{
 		write(2, "error while writing in heredoc\n", 25);
 		close(fd);

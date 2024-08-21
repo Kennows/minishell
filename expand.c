@@ -10,80 +10,105 @@ char	*ft_str_replace(char *str, char *substitute, int start, int end)
 	len = ((ft_strlen(str) + ft_strlen(substitute)) - (end - start));
 	new = malloc(sizeof(char) * (len + 1));
 	if (!new)
+	{
+		free(substitute);
+		free(str);
 		return (NULL);
+	}
 	while (++i < start)
 		new[i] = str[i];
 	while (substitute && *substitute)
-		new[i++] = *substitute++;
+		new[i++] = *(substitute++);
 	while (str[end])
 		new[i++] = str[end++];
 	new[i] = '\0';
+	free(str);
 	return (new);
 }
 
-char	*ft_replace_var(char *str, int start, int end, char *env)
+int	ft_getnenv(char *str, char **env, int n)
+{
+	char	*temp;
+
+	temp = malloc(sizeof(char) * n);
+	if (!temp)
+		return (0);
+	ft_strlcpy(temp, str, n);
+	if (getenv(temp))
+	{
+		*env = ft_strdup(getenv(temp));
+		if (!*env)
+		{
+			free(temp);
+			return (0);
+		}
+	}
+	free(temp);
+	return (1);
+}
+
+char	*ft_replace_var(char *str, int start, int end, int heredoc)
 {
 	char	*new;
+	char	*env;
 
+	env = NULL;
 	if (end - start > 1)
 	{
+		if (!ft_getnenv(str + start + 1, &env, end - start))
+		{
+			free(str);
+			return (NULL);
+		}
 		new = ft_str_replace(str, env, start, end);
 		if (!new)
 		{
 			write(2, "malloc failed during variable expansion\n", 40);
-			free(str);
 			return (NULL);
 		}
-		free(str);
 		end = (start + ft_strlen(env));
 	}
 	else
 		new = str;
 	if (new[end] != '\0')
-		new = ft_handle_env(new, end);
+		new = ft_handle_env(new, end, heredoc);
+	free(env);
 	return (new);
 }
 
-int	ft_find_env_start(char *str, int i)
+int	ft_find_env_start(char *str, int i, int heredoc)
 {
 	int	quoted;
 
 	quoted = 0;
 	while (str[i] && str[i] != '$')
 	{
-		if (str[i] == '"' && quoted == 0)
-			quoted = 1;
-		else if (str[i] == '"' && quoted == 1)
-			quoted = 0;
-		if (str[i] == '\'' && quoted == 0)
-			while (str[++i] != '\'')
-				continue ;
+		if (heredoc == 0)
+		{
+			if (str[i] == '"' && quoted == 0)
+				quoted = 1;
+			else if (str[i] == '"' && quoted == 1)
+				quoted = 0;
+			if (str[i] == '\'' && quoted == 0)
+				while (str[++i] != '\'')
+					continue ;
+		}
 		i++;
 	}
 	return (i);
 }
 
-
-char	*ft_handle_env(char *str, int start)
+char	*ft_handle_env(char *str, int start, int heredoc)
 {
 	int	end;
-	char	*var;
 
-	start = ft_find_env_start(str, start);
+	start = ft_find_env_start(str, start, heredoc);
 	if (str[start] == '$')
 	{
 		end = start + 1;
 		while (ft_isalnum(str[end]))
 			end++;
-		var = ft_substr(str, start, (end - start));
-		if (!var)
-		{
-			write(2, "malloc failed during variable expansion\n", 40);
-			free(str);
-			return (NULL);
-		}
-		str = ft_replace_var(str, start, end, getenv(var + 1));
-		free(var);
+		str = ft_replace_var(str, start, end, heredoc);
 		return (str);
 	}
 	return (str);
@@ -145,7 +170,7 @@ char	*ft_expand(char *str)
 	new = NULL;
 	if (str)
 	{
-		new = ft_handle_env(str, 0);
+		new = ft_handle_env(str, 0, 0);
 		if (!new)
 			return (NULL);
 		new = ft_handle_quotes(new, 0);
