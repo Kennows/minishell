@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 16:49:34 by nvallin           #+#    #+#             */
-/*   Updated: 2024/07/23 18:36:47 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/28 16:13:11 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,14 +93,14 @@ static char	**ft_help_split(char **dst, char const *s, char c)
 		end = &s[ft_find_end(s, c)];
 		if (*s != '\0')
 		{
-			dst[i] = malloc((end - s + 1) * sizeof(char));
+			dst[i] = malloc(((end - s) + 1) * sizeof(char));
 			if (!dst[i])
 			{
 				ft_free_array(dst);
 				write(2, "malloc failed while splitting input\n", 36);
 				return (NULL);
 			}
-			ft_strlcpy(dst[i++], s, end - s + 1);
+			ft_strlcpy(dst[i++], s, (end - s) + 1);
 		}
 		s = end;
 	}

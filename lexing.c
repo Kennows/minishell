@@ -6,31 +6,11 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 16:57:08 by nvallin           #+#    #+#             */
-/*   Updated: 2024/07/25 18:02:57 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/28 19:27:40 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-void	ft_free_tokens(t_lex *tokens)
-{
-	t_lex	*temp;
-
-	while (tokens->prev != NULL)
-		tokens = tokens->prev;
-	while (tokens->next != NULL)
-	{
-		temp = tokens->next;
-		free(tokens->str);
-		free(tokens);
-		tokens = temp;
-		tokens->prev = NULL;
-	}
-	free(tokens->str);
-	free(tokens);
-	temp = NULL;
-	tokens = NULL;
-}		
 
 void	ft_token_type(t_lex *token)
 {
@@ -104,7 +84,7 @@ t_lex	*ft_add_token(t_lex *tokens, char *str)
 		}
 		current->next = ft_new_token(str, ++i);
 		if (!current->next)
-			ft_free_tokens(tokens);
+			ft_free_tokens(&tokens);
 		else
 			current->next->prev = current;
 	}

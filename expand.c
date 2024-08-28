@@ -1,30 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   expand.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/08/26 11:36:45 by nvallin           #+#    #+#             */
+/*   Updated: 2024/08/28 19:11:34 by nvallin          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
-
-char	*ft_str_replace(char *str, char *substitute, int start, int end)
-{
-	int	len;
-	char	*new;
-	int	i;
-
-	i = -1;
-	len = ((ft_strlen(str) + ft_strlen(substitute)) - (end - start));
-	new = malloc(sizeof(char) * (len + 1));
-	if (!new)
-	{
-		free(substitute);
-		free(str);
-		return (NULL);
-	}
-	while (++i < start)
-		new[i] = str[i];
-	while (substitute && *substitute)
-		new[i++] = *(substitute++);
-	while (str[end])
-		new[i++] = str[end++];
-	new[i] = '\0';
-	free(str);
-	return (new);
-}
 
 int	ft_getnenv(char *str, char **env, int n)
 {
@@ -49,10 +35,11 @@ int	ft_getnenv(char *str, char **env, int n)
 
 char	*ft_replace_var(char *str, int start, int end, int heredoc)
 {
-	char	*new;
 	char	*env;
+	char	*new;
 
 	env = NULL;
+	new = NULL;
 	if (end - start > 1)
 	{
 		if (!ft_getnenv(str + start + 1, &env, end - start))
@@ -60,20 +47,19 @@ char	*ft_replace_var(char *str, int start, int end, int heredoc)
 			free(str);
 			return (NULL);
 		}
-		new = ft_str_replace(str, env, start, end);
-		if (!new)
-		{
-			write(2, "malloc failed during variable expansion\n", 40);
+		str = ft_str_replace(str, env, start, end);
+		if (!str)
 			return (NULL);
-		}
 		end = (start + ft_strlen(env));
+		free(env);
 	}
-	else
-		new = str;
-	if (new[end] != '\0')
-		new = ft_handle_env(new, end, heredoc);
-	free(env);
-	return (new);
+	if (str[end] != '\0')
+	{
+		new = ft_handle_env(str, end, heredoc, 0);
+		free(str);
+		return (new);
+	}
+	return (str);
 }
 
 int	ft_find_env_start(char *str, int i, int heredoc)
@@ -98,68 +84,30 @@ int	ft_find_env_start(char *str, int i, int heredoc)
 	return (i);
 }
 
-char	*ft_handle_env(char *str, int start, int heredoc)
+char	*ft_handle_env(char *str, int start, int heredoc, int free_input)
 {
-	int	end;
-
-	start = ft_find_env_start(str, start, heredoc);
-	if (str[start] == '$')
-	{
-		end = start + 1;
-		while (ft_isalnum(str[end]))
-			end++;
-		str = ft_replace_var(str, start, end, heredoc);
-		return (str);
-	}
-	return (str);
-}
-
-char	*ft_remove_quotes(char *str, char *new, char q, int *start)
-{
-	int	i;
-	int	quotes;
-
-	quotes = 0;
-	i = -1;
-	while (++i < *start)
-		new[i] = str[i];
-	while (str[i + quotes])
-	{
-		while (str[i + quotes] == q && quotes < 2)
-		{
-			quotes++;
-			if (quotes == 2)
-				*start = i;
-		}
-		new[i] = str[i + quotes];
-		i++;
-	}
-	new[i] = '\0';
-	free(str);
-	return (new);
-}
-
-char	*ft_handle_quotes(char *str, int start)
-{
+	int		end;
 	char	*new;
 
-	while (str[start] && str[start] != '"' && str[start] != '\'')
-		start++;
-	if (str[start] == '\0')
-		return (str);
-	new = malloc(sizeof(char) * (ft_strlen(str) - 1));
+	new = ft_strdup(str);
 	if (!new)
 	{
-		free(str);
-		write(2, "malloc failed while removing quotes\n", 36);
+		if (free_input)
+			free(str);
 		return (NULL);
 	}
-	if (str[start] == '"')
-		new = ft_remove_quotes(str, new, '"', &start);
-	else if (str[start] == '\'')
-		new = ft_remove_quotes(str, new, '\'', &start);
-	if (new[start] != '\0')
-		new = ft_handle_quotes(new, start);
+	start = ft_find_env_start(new, start, heredoc);
+	if (new[start] == '$')
+	{
+		end = start + 1;
+		while (ft_isalnum(new[end]))
+			end++;
+		new = ft_replace_var(new, start, end, heredoc);
+		if (!new)
+			write(2, "malloc failed during variable expansion\n", 40);
+	}
+	if (free_input)
+		free(str);
 	return (new);
 }
 
@@ -170,7 +118,7 @@ char	*ft_expand(char *str)
 	new = NULL;
 	if (str)
 	{
-		new = ft_handle_env(str, 0, 0);
+		new = ft_handle_env(str, 0, 0, 0);
 		if (!new)
 			return (NULL);
 		new = ft_handle_quotes(new, 0);
@@ -178,5 +126,5 @@ char	*ft_expand(char *str)
 			return (NULL);
 		return (new);
 	}
-	return (str);
+	return (NULL);
 }

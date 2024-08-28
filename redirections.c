@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 11:45:09 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/01 17:06:51 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/28 17:34:35 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,13 @@ t_file	*ft_new_file(t_file *file, char **name, t_token_type type)
 	file = malloc(sizeof(t_file));
 	if (!file)
 	{
-		free(*name);
 		write(2, "malloc failed while listing files\n", 34);
 		return (NULL);
 	}
-	file->name = ft_expand(ft_strdup(*name));
+	file->name = ft_expand(*name);
 	if (!file->name)
 	{
-		free(*name);
+		free(file);
 		write(2, "malloc failed while listing files\n", 34);
 		return (NULL);
 	}
@@ -122,7 +121,7 @@ int	ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table)
 	name = ft_heredoc_name();
 	if (!name)
 	{
-		write(2, "malloc failed while creating heredoc\n", 37); 
+		write(2, "malloc failed while creating heredoc\n", 37);
 		return (0);
 	}
 	temp = ft_new_file(temp, &name, (*token)->type);

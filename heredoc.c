@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 18:53:06 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/01 22:58:56 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/28 17:32:45 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,16 +39,14 @@ char	*ft_heredoc_name(void)
 
 char	*ft_strappend(char *dest, char *src)
 {
-	char 	*new;
-	int	i;
+	char	*new;
+	int		i;
 
 	if (!src)
 		return (dest);
 	if (dest == NULL)
 	{
 		dest = ft_strdup(src);
-		if (!dest)
-			return (NULL);
 		return (dest);
 	}
 	new = malloc(sizeof(char) * (ft_strlen(dest) + ft_strlen(src) + 2));
@@ -71,7 +69,6 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted)
 {
 	char	*buf;
 
-	buf = NULL;
 	while (1)
 	{
 		buf = readline(">");
@@ -79,7 +76,7 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted)
 		{
 			if (!quoted)
 			{
-				buf = ft_handle_env(buf, 0, 1);
+				buf = ft_handle_env(buf, 0, 1, 1);
 				if (!buf)
 					return (0);
 			}
@@ -99,7 +96,7 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted)
 int	ft_write_in_heredoc(int fd, char **delim)
 {
 	char	*str;
-	int	quoted;
+	int		quoted;
 
 	quoted = 1;
 	str = NULL;
@@ -133,7 +130,7 @@ int	ft_create_heredoc(char **delim, char *filename)
 	}
 	if (!ft_write_in_heredoc(fd, delim))
 	{
-		write(2, "error while writing in heredoc\n", 25);
+		write(2, "error while writing in heredoc\n", 31);
 		close(fd);
 		return (0);
 	}

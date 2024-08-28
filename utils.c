@@ -5,29 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/18 16:02:34 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/01 17:04:43 by nvallin          ###   ########.fr       */
+/*   Created: 2024/08/26 11:50:07 by nvallin           #+#    #+#             */
+/*   Updated: 2024/08/28 19:20:35 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-void	ft_command_type(t_command *cmd)
-{
-	if (cmd->argv[0])
-	{
-		if (!ft_strncmp(cmd->argv[0], "echo", 5) || \
-			!ft_strncmp(cmd->argv[0], "cd", 3) || \
-			!ft_strncmp(cmd->argv[0], "pwd", 4) || \
-			!ft_strncmp(cmd->argv[0], "export", 7) || \
-			!ft_strncmp(cmd->argv[0], "unset", 6) || \
-			!ft_strncmp(cmd->argv[0], "env", 4) || \
-			!ft_strncmp(cmd->argv[0], "exit", 5))
-			cmd->type = BUILT_IN;
-		else
-			cmd->type = WORD;
-	}
-}
 
 int	ft_isnumber(const char *str)
 {
@@ -87,87 +70,45 @@ char	**ft_array_append(char **array, char *str)
 	return (new);
 }
 
-void	ft_free_files(t_file *files)
+char	*ft_str_replace(char *str, char *substitute, int start, int end)
 {
-	t_file *temp;
+	int		len;
+	char	*new;
+	int		i;
 
-	if (files)
+	i = -1;
+	len = ((ft_strlen(str) + ft_strlen(substitute)) - (end - start));
+	new = malloc(sizeof(char) * (len + 1));
+	if (!new)
 	{
-		while (files->prev)
-			files = files->prev;
-		while (files)
-		{
-			temp = files->next;
-			free(files->name);
-			free(files);
-			files = temp;
-		}
-		free(files);
+		free(str);
+		free(substitute);
+		return (NULL);
 	}
+	while (++i < start)
+		new[i] = str[i];
+	while (substitute && *substitute)
+		new[i++] = *(substitute++);
+	while (str[end])
+		new[i++] = str[end++];
+	new[i] = '\0';
+	free(str);
+	return (new);
 }
 
-void	ft_remove_token(t_lex *token)
+void	ft_command_type(t_command *cmd)
 {
-	t_lex	*prev;
-	t_lex	*next;
-	t_lex	*current;
-
-	prev = token->prev;
-	next = token->next;
-	if (prev != NULL)
-		prev->next = next;
-	if (next != NULL)
-		next->prev = prev;
-	current = token;
-	while (current->next != NULL)
+	if (cmd->argv[0])
 	{
-		current = current->next;
-		current->index--;
+		if (!ft_strncmp(cmd->argv[0], "echo", 5) || \
+			!ft_strncmp(cmd->argv[0], "cd", 3) || \
+			!ft_strncmp(cmd->argv[0], "pwd", 4) || \
+			!ft_strncmp(cmd->argv[0], "export", 7) || \
+			!ft_strncmp(cmd->argv[0], "unset", 6) || \
+			!ft_strncmp(cmd->argv[0], "env", 4) || \
+			!ft_strncmp(cmd->argv[0], "exit", 5))
+			cmd->type = BUILT_IN;
+		else
+			cmd->type = WORD;
 	}
-	if (token->str)
-		free(token->str);
-	free(token);
-	token = NULL;
-}
-
-void	ft_free_commands(t_command *cmd)
-{
-	int			i;
-	t_command	*temp;
-
-	while (cmd != NULL)
-	{
-		i = -1;
-		temp = cmd->next;
-		if (cmd->argv)
-		{
-			while (++i < cmd->argc)
-				free(cmd->argv[i]);
-			free(cmd->argv[i]);
-			free(cmd->argv);
-		}
-		free(cmd);
-		cmd = temp;
-	}
-	temp = NULL;
-	cmd = NULL;
-}
-
-void    ft_free_all(t_lex *token, t_command *cmd, t_command_table *table)
-{
-        ft_free_tokens(token);
-        ft_free_commands(cmd);
-        ft_free_files(table->files);
-        free(table);
-}
-
-void	ft_init_command(t_command *cmd)
-{
-	cmd->argv = NULL;
-	cmd->pipe_in = NULL;
-	cmd->pipe_out = NULL;
-	cmd->redir_in_file = NULL;
-	cmd->redir_out_file = NULL;
-	cmd->next = NULL;
-	cmd->prev = NULL;
 }

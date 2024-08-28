@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 16:22:21 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/01 17:12:47 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/27 19:02:54 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,39 +36,41 @@ void	ft_print_table(t_command_table *t)
 	current = t->commands;
 	while (current->next != NULL)
 	{
-		if (current->argv)
+		if (current->argv && current->argv[0])
 			ft_printf("command: %s, type: %d, ", current->argv[0], current->type);
 		while (i < current->argc)
 		{
-			ft_printf("argument %d: %s, ", i, current->argv[i]);
+			if (current->argv[i])
+				ft_printf("argument %d: %s, ", i, current->argv[i]);
 			i++;
 		}
 		if (current->redir_in_file != NULL)
 			ft_printf("redirect in: %s, ", current->redir_in_file->name);
 		if (current->redir_out_file != NULL)
 			ft_printf("redir out: %s, ", current->redir_out_file->name);
-		if (current->pipe_in != NULL)
+		if (current->pipe_in != NULL && current->pipe_in->argv[0])
 			ft_printf("pipe in: %s, ", current->pipe_in->argv[0]);
-		if (current->pipe_out != NULL)
+		if (current->pipe_out != NULL && current->pipe_out->argv[0])
 			ft_printf("pipe out: %s, ", current->pipe_out->argv[0]);
 		current = current->next;
 		printf("\n");
 		i = 1;
 	}
-	if (current->argv)
+	if (current->argv && current->argv[0])
 		ft_printf("command: %s, type: %d, ", current->argv[0], current->type);
 	while (i < current->argc)
 	{
-		ft_printf("argument %d: %s, ", i, current->argv[i]);
+		if (current->argv[i])
+			ft_printf("argument %d: %s, ", i, current->argv[i]);
 		i++;
 	}
 	if (current->redir_in_file != NULL)
 		ft_printf("redirect in: %s, ", current->redir_in_file->name);
 	if (current->redir_out_file != NULL)
 		ft_printf("redir out: %s, ", current->redir_out_file->name);
-	if (current->pipe_in != NULL)
+	if (current->pipe_in != NULL && current->pipe_in->argv[0])
 		ft_printf("pipe in: %s\n", current->pipe_in->argv[0]);
-	if (current->pipe_out != NULL)
+	if (current->pipe_out != NULL && current->pipe_out->argv[0])
 		ft_printf("pipe out: %s\n", current->pipe_out->argv[0]);
 	printf("\n");
 }
@@ -107,7 +109,7 @@ int	main(void)
 			free(cmd);
 			if (!tokens)
 				continue ;
-			ft_print_tokens(tokens);
+			ft_print_tokens(tokens); 
 			table = ft_add_commands(table, tokens);
 			if (!table)
 				continue ;

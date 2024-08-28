@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 16:54:44 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/01 16:54:24 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/28 19:29:26 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,8 +78,8 @@ typedef struct s_command_table
 	struct s_file		*files;
 }		t_command_table;
 
-void			ft_free_tokens(t_lex *tokens);
-void			ft_remove_token(t_lex *token);
+void			ft_free_tokens(t_lex **tokens);
+t_lex			*ft_remove_token(t_lex *token);
 t_lex			*ft_new_token(char *str, int index);
 t_lex			*ft_add_token(t_lex *tokens, char *str);
 t_lex			*ft_tokenize(char *cmd);
@@ -87,13 +87,20 @@ char			**ft_token_split(char const *s, char c);
 
 void			ft_free_commands(t_command	*table);
 void			ft_init_command(t_command *cmd);
-t_command		*ft_parse_pipes(t_command *head, t_lex *tokens, t_command *prev);
+int				ft_init_argv(t_command *cmd, t_command_table *table);
+t_command		*ft_parse_pipes(t_command *head, t_lex *tokens, \
+								t_command *prev);
 t_command		*ft_parse_redirections(t_command *cmd, t_command_table *table);
-t_lex			*ft_parse_redirect_in(t_command *cmd, t_lex *current_token, t_file **file);
-int			ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table);
-t_lex			*ft_parse_append(t_command *cmd, t_lex *current_token, t_file **file);
-int			ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table);
+t_lex			*ft_parse_redirect_in(t_command *cmd, t_lex *current_token, \
+										t_file **file);
+int				ft_handle_redir(t_command *cmd, t_lex **token, \
+								t_command_table *table);
+t_lex			*ft_parse_append(t_command *cmd, t_lex *current_token, \
+									t_file **file);
+int				ft_parse_heredoc(t_command *cmd, t_lex **token, \
+									t_command_table *table);
 t_command_table	*ft_add_commands(t_command_table *table, t_lex *tokens);
+t_command_table	*ft_create_cmd_table(t_command_table *table, t_lex *tokens);
 t_command		*ft_parse(t_lex *tokens);
 
 int				ft_isnumber(const char *str);
@@ -102,23 +109,27 @@ char			**ft_array_append(char **array, char *str);
 void			ft_print_tokens(t_lex *t);
 
 void			ft_free_files(t_file *files);
-int			ft_create_heredoc(char **delimiter, char *filename);
+int				ft_create_heredoc(char **delimiter, char *filename);
 char			*ft_heredoc_name(void);
 
 //void			ft_sighandler(int signal);
 //void			ft_set_sig_handler(void);
 
-int			ft_pipe_syntax_check(t_lex **tokens, t_command **cmd);
-int			ft_redir_syntax_check(t_lex **token, t_command **cmd, t_command_table **table);
+int				ft_pipe_syntax_check(t_lex **tokens, t_command **cmd);
+int				ft_redir_syntax_check(t_lex **token, t_command **cmd, \
+										t_command_table **table);
 
-void    ft_free_all(t_lex *token, t_command *cmd, t_command_table *table);
+void			ft_free_all(t_lex *token, t_command *cmd, \
+							t_command_table *table);
 
-char	*ft_str_replace(char *str, char *substitute, int start, int end);
-char	*ft_replace_var(char *str, int start, int end, int heredoc);
-char	*ft_remove_quotes(char *str, char *new, char q, int *start);
-char	*ft_handle_quotes(char *str, int start);
-char	*ft_handle_env(char *str, int start, int heredoc);
-char	*ft_expand(char *str);
-void	ft_command_type(t_command *cmd);
+char			*ft_str_replace(char *str, char *substitute, int start, \
+								int end);
+char			*ft_replace_var(char *str, int start, int end, int heredoc);
+char			*ft_remove_quotes(char *str, char *new, char q, int *start);
+char			*ft_handle_quotes(char *str, int start);
+char			*ft_handle_env(char *str, int start, int heredoc, \
+								int free_input);
+char			*ft_expand(char *str);
+void			ft_command_type(t_command *cmd);
 
 #endif

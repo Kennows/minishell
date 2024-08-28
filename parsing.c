@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 17:15:17 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/01 17:09:54 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/28 19:22:49 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,8 @@ t_command	*ft_parse_redirections(t_command *cmd, t_command_table *table)
 		else if (!ft_handle_redir(cmd, &current_token, table))
 			return (NULL);
 	}
-	if (cmd->token_end && cmd->token_start)
-		cmd->argc = (cmd->token_end->index - cmd->token_start->index) + 1;
-	else
-		cmd->argc = 1;	
+	if (!ft_init_argv(cmd, table))
+		return (NULL);
 	if (cmd->next != NULL)
 	{
 		cmd->next = ft_parse_redirections(cmd->next, table);
@@ -39,29 +37,22 @@ t_command	*ft_parse_redirections(t_command *cmd, t_command_table *table)
 	return (cmd);
 }
 
-t_command	*ft_parse_cmd_and_args(t_command *cmd, t_lex *token)
+t_command	*ft_parse_cmd_and_args(t_command *cmd)
 {
-	t_lex	*temp;
 	int		i;
 
 	i = -1;
-	cmd->argv = malloc(sizeof(char *) * (cmd->argc + 1));
-	if (!cmd->argv)
-		return (NULL);
-	while (++i < cmd->argc && token)
+	while (++i < cmd->argc && cmd->token_start)
 	{
-		cmd->argv[i] = ft_expand(ft_strdup(token->str));
+		cmd->argv[i] = ft_expand(cmd->token_start->str);
 		if (!cmd->argv[i])
 			return (NULL);
-		temp = token->next;
-		ft_remove_token(token);
-		token = temp;
+		cmd->token_start = ft_remove_token(cmd->token_start);
 	}
-	cmd->argv[i] = NULL;
 	ft_command_type(cmd);
 	if (cmd->next == NULL)
 		return (cmd);
-	cmd->next = ft_parse_cmd_and_args(cmd->next, cmd->next->token_start);
+	cmd->next = ft_parse_cmd_and_args(cmd->next);
 	if (!cmd->next)
 		return (NULL);
 	return (cmd);
@@ -73,7 +64,7 @@ t_command	*ft_parse_pipes(t_command *head, t_lex *tokens, t_command *prev)
 	if (!head)
 	{
 		write(2, "malloc failed while parsing pipes\n", 34);
-		ft_free_tokens(tokens);
+		ft_free_tokens(&tokens);
 		return (NULL);
 	}
 	if (!ft_pipe_syntax_check(&tokens, &head))
@@ -94,12 +85,13 @@ t_command	*ft_parse_pipes(t_command *head, t_lex *tokens, t_command *prev)
 	return (head);
 }
 
-t_command_table *ft_create_cmd_table(t_command_table *table)
+t_command_table	*ft_create_cmd_table(t_command_table *table, t_lex *tokens)
 {
 	table = malloc(sizeof(t_command_table));
 	if (!table)
 	{
 		write(2, "malloc failed while creating command table\n", 43);
+		ft_free_tokens(&tokens);
 		return (NULL);
 	}
 	table->commands = NULL;
@@ -112,23 +104,27 @@ t_command_table	*ft_add_commands(t_command_table *table, t_lex *tokens)
 	t_command		*command;
 
 	command = NULL;
-	table = ft_create_cmd_table(table);
+	table = ft_create_cmd_table(table, tokens);
 	if (!table)
 		return (NULL);
 	table->commands = ft_parse_pipes(command, tokens, NULL);
 	if (!table->commands)
+	{
+		free(table);
 		return (NULL);
+	}
 	puts("pipes handled");
 	command = table->commands;
 	command = ft_parse_redirections(command, table);
 	if (!command)
 		return (NULL);
 	puts("redirections handled");
-	command = ft_parse_cmd_and_args(command, command->token_start);
+	command = ft_parse_cmd_and_args(command);
 	if (!command)
 	{
+		command = table->commands;
 		write(2, "malloc failed while parsing cmds and args\n", 42);
-		ft_free_all(tokens, table->commands, table);
+		ft_free_all(command->token_start, command, table);
 		return (NULL);
 	}
 	puts("cmds handled");
