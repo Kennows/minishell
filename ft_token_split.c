@@ -6,13 +6,13 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 16:49:34 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 16:13:11 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/29 15:28:50 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static int	ft_find_end(const char *str, char c)
+static int	ft_find_end(const char *str)
 {
 	int	i;
 
@@ -22,7 +22,7 @@ static int	ft_find_end(const char *str, char c)
 		return (i + 2);
 	if (str[i] == '<' || str[i] == '>' || str[i] == '|')
 		return (i + 1);
-	while (str[i] != c && str[i] != '\0' && str[i] != '<' \
+	while (!ft_is_whitespace(str[i]) && str[i] != '\0' && str[i] != '<' \
 			&& str[i] != '>' && str[i] != '|')
 	{
 		if (str[i] == '"')
@@ -41,7 +41,7 @@ static int	ft_find_end(const char *str, char c)
 	return (i);
 }
 
-static char	**ft_allocate(char const *s, char c)
+static char	**ft_allocate(char const *s)
 {
 	char		**new;
 	int			strings;
@@ -51,12 +51,12 @@ static char	**ft_allocate(char const *s, char c)
 	i = 0;
 	while (s[i] != '\0')
 	{
-		if (s[i] != c)
+		if (!ft_is_whitespace(s[i]))
 			strings++;
-		if (ft_find_end(&s[i], c) == -1)
+		if (ft_find_end(&s[i]) == -1)
 			return (NULL);
-		i += ft_find_end(&s[i], c);
-		while (s[i] == c && s[i] != '\0')
+		i += ft_find_end(&s[i]);
+		while (ft_is_whitespace(s[i]) && s[i] != '\0')
 			i++;
 	}
 	if (strings == 1)
@@ -80,7 +80,7 @@ static void	ft_free_array(char **arr)
 	free(arr);
 }
 
-static char	**ft_help_split(char **dst, char const *s, char c)
+static char	**ft_help_split(char **dst, char const *s)
 {
 	char const	*end;
 	int			i;
@@ -88,9 +88,9 @@ static char	**ft_help_split(char **dst, char const *s, char c)
 	i = 0;
 	while (*s != '\0')
 	{
-		while (*s == c)
+		while (ft_is_whitespace(*s))
 			s++;
-		end = &s[ft_find_end(s, c)];
+		end = &s[ft_find_end(s)];
 		if (*s != '\0')
 		{
 			dst[i] = malloc(((end - s) + 1) * sizeof(char));
@@ -108,16 +108,16 @@ static char	**ft_help_split(char **dst, char const *s, char c)
 	return (dst);
 }
 
-char	**ft_token_split(char const *s, char c)
+char	**ft_token_split(char const *s)
 {
 	char	**new;
 
 	if (!s)
 		return (NULL);
-	new = ft_allocate(s, c);
+	new = ft_allocate(s);
 	if (!new)
 		return (NULL);
-	new = ft_help_split(new, s, c);
+	new = ft_help_split(new, s);
 	if (!new)
 		return (NULL);
 	return (new);

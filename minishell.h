@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 16:54:44 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 19:29:26 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/29 15:27:25 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ t_lex			*ft_remove_token(t_lex *token);
 t_lex			*ft_new_token(char *str, int index);
 t_lex			*ft_add_token(t_lex *tokens, char *str);
 t_lex			*ft_tokenize(char *cmd);
-char			**ft_token_split(char const *s, char c);
+char			**ft_token_split(char const *s);
 
 void			ft_free_commands(t_command	*table);
 void			ft_init_command(t_command *cmd);
@@ -131,5 +131,6 @@ char			*ft_handle_env(char *str, int start, int heredoc, \
 								int free_input);
 char			*ft_expand(char *str);
 void			ft_command_type(t_command *cmd);
+int			ft_is_whitespace(char c);
 
 #endif

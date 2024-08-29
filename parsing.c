@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 17:15:17 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 19:22:49 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/29 14:21:45 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,10 @@ t_command	*ft_parse_redirections(t_command *cmd, t_command_table *table)
 			current_token->type == BUILT_IN)
 			current_token = current_token->next;
 		else if (!ft_handle_redir(cmd, &current_token, table))
+		{
+			ft_free_all(current_token, cmd, table);
 			return (NULL);
+		}
 	}
 	if (!ft_init_argv(cmd, table))
 		return (NULL);

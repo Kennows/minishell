@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 11:45:09 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 17:34:35 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/29 14:26:25 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,20 +93,17 @@ int	ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table)
 	if ((*token)->type == HERE_DOC)
 	{
 		if (!ft_parse_heredoc(cmd, token, table))
-		{
-			ft_free_all(*token, cmd, table);
 			return (0);
-		}
 		else
 			return (1);
 	}
 	temp = ft_new_file(temp, &(*token)->next->str, (*token)->type);
 	if (!temp)
-	{
-		ft_free_all(*token, cmd, table);
 		return (0);
-	}
-	cmd->redir_out_file = temp;
+	if ((*token)->type == REDIR_IN)
+		cmd->redir_in_file = temp;
+	else
+		cmd->redir_out_file = temp;
 	ft_add_file_to_list(table, temp);
 	*token = ft_remove_redirection(cmd, *token);
 	return (1);

@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 16:57:08 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 19:27:40 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/29 15:26:57 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ t_lex	*ft_tokenize(char *cmd)
 
 	tokens = NULL;
 	i = 0;
-	temp = ft_token_split(cmd, ' ');
+	temp = ft_token_split(cmd);
 	if (!temp)
 		return (NULL);
 	while (temp[i] != NULL)
