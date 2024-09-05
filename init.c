@@ -12,9 +12,14 @@
 
 #include "minishell.h"
 
-void	ft_init_command(t_command *cmd)
+void	ft_init_command(t_command *cmd, t_command_table *table)
 {
 	cmd->argv = NULL;
+	cmd->argc = 0;
+	cmd->envp = &table->envp;
+	cmd->type = WORD;
+	cmd->token_start = NULL;
+	cmd->token_end = NULL;
 	cmd->pipe_in = NULL;
 	cmd->pipe_out = NULL;
 	cmd->redir_in_file = NULL;

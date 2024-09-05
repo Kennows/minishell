@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-int	ft_getnenv(char *str, char **env, int n)
+int	ft_getnenv(char *str, char **env, int n, char **envp)
 {
 	char	*temp;
 
@@ -20,9 +20,9 @@ int	ft_getnenv(char *str, char **env, int n)
 	if (!temp)
 		return (0);
 	ft_strlcpy(temp, str, n);
-	if (getenv(temp))
+	if (ft_getenv(temp, envp))
 	{
-		*env = ft_strdup(getenv(temp));
+		*env = ft_strdup(ft_getenv(temp, envp));
 		if (!*env)
 		{
 			free(temp);
@@ -33,16 +33,15 @@ int	ft_getnenv(char *str, char **env, int n)
 	return (1);
 }
 
-char	*ft_replace_var(char *str, int start, int end, int heredoc)
+char	*ft_replace_var(char *str, int start, int end, char **envp)
 {
 	char	*env;
 	char	*new;
 
 	env = NULL;
-	new = NULL;
 	if (end - start > 1)
 	{
-		if (!ft_getnenv(str + start + 1, &env, end - start))
+		if (!ft_getnenv(str + start + 1, &env, end - start, envp))
 		{
 			free(str);
 			return (NULL);
@@ -55,70 +54,61 @@ char	*ft_replace_var(char *str, int start, int end, int heredoc)
 	}
 	if (str[end] != '\0')
 	{
-		new = ft_handle_env(str, end, heredoc, 0);
+		new = ft_handle_env(str, end, envp);
 		free(str);
 		return (new);
 	}
 	return (str);
 }
 
-int	ft_find_env_start(char *str, int i, int heredoc)
+int	ft_find_env_start(char *str, int i)
 {
 	int	quoted;
 
 	quoted = 0;
 	while (str[i] && str[i] != '$')
 	{
-		if (heredoc == 0)
-		{
-			if (str[i] == '"' && quoted == 0)
-				quoted = 1;
-			else if (str[i] == '"' && quoted == 1)
-				quoted = 0;
-			if (str[i] == '\'' && quoted == 0)
-				while (str[++i] != '\'')
-					continue ;
-		}
+		if (str[i] == '"' && quoted == 0)
+			quoted = 1;
+		else if (str[i] == '"' && quoted == 1)
+			quoted = 0;
+		if (str[i] == '\'' && quoted == 0)
+			while (str[++i] != '\'')
+				continue ;
 		i++;
 	}
 	return (i);
 }
 
-char	*ft_handle_env(char *str, int start, int heredoc, int free_input)
+char	*ft_handle_env(char *str, int start, char **envp)
 {
 	int		end;
 	char	*new;
 
 	new = ft_strdup(str);
 	if (!new)
-	{
-		if (free_input)
-			free(str);
 		return (NULL);
-	}
-	start = ft_find_env_start(new, start, heredoc);
+	start = ft_find_env_start(new, start);
 	if (new[start] == '$')
 	{
 		end = start + 1;
 		while (ft_isalnum(new[end]))
 			end++;
-		new = ft_replace_var(new, start, end, heredoc);
+		new = ft_replace_var(new, start, end, envp);
 		if (!new)
 			write(2, "malloc failed during variable expansion\n", 40);
 	}
-	if (free_input)
-		free(str);
 	return (new);
 }
 
-char	*ft_expand(char *str)
+char	*ft_expand(char *str, char **envp)
 {
 	char	*new;
 
 	new = NULL;
 	if (str)
 	{
-		new = ft_handle_env(str, 0, 0, 0);
+		new = ft_handle_env(str, 0, envp);
 		if (!new)
 			return (NULL);
 		new = ft_handle_quotes(new, 0);

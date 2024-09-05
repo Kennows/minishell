@@ -66,51 +66,56 @@ void	ft_free_tokens(t_lex **tokens)
 	*tokens = NULL;
 }	
 
-void	ft_free_commands(t_command *cmd)
+void	ft_free_commands(t_command **cmd)
 {
 	int			i;
 	t_command	*temp;
 
-	while (cmd != NULL)
+	while (cmd && *cmd)
 	{
 		i = 0;
-		temp = cmd->next;
-		if (cmd->argv)
+		temp = (*cmd)->next;
+		if ((*cmd)->argv != NULL)
 		{
-			while (cmd->argv[i])
-				free(cmd->argv[i++]);
-			free(cmd->argv);
+			// tsekkaa leaks
+			while ((*cmd)->argv[i] != NULL)
+				free((*cmd)->argv[i++]);
+			free((*cmd)->argv);
 		}
-		free(cmd);
-		cmd = temp;
+		free(*cmd);
+		*cmd = temp;
 	}
 	temp = NULL;
-	cmd = NULL;
+	*cmd = NULL;
 }
 
-void	ft_free_files(t_file *files)
+void	ft_free_files(t_file **files)
 {
 	t_file	*temp;
 
-	if (files)
+	if (files && *files != NULL)
 	{
-		while (files->prev != NULL)
-			files = files->prev;
-		while (files)
+		while ((*files)->prev != NULL)
+			*files = (*files)->prev;
+		while (*files != NULL)
 		{
-			temp = files->next;
-			if (files->name)
-				free(files->name);
-			free(files);
-			files = temp;
+			temp = (*files)->next;
+			if ((*files)->name != NULL)
+				free((*files)->name);
+			free(*files);
+			*files = temp;
 		}
+		*files = NULL;
 	}
 }
 
 void	ft_free_all(t_lex *token, t_command *cmd, t_command_table *table)
 {
-	ft_free_tokens(&token);
-	ft_free_commands(cmd);
-	ft_free_files(&*table->files);
-	free(table);
+	if (token)
+		ft_free_tokens(&token);
+	if (cmd != NULL)
+		ft_free_commands(&cmd);
+	if (table->files)
+		ft_free_files(&table->files);
+//	free(table);
 }

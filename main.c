@@ -87,21 +87,30 @@ void	ft_print_files(t_file *files)
 	}
 }
 
-int	main(void)
+int	main(int argc, char **argv, char **envp)
 {
 	t_lex			*tokens;
 	t_command_table	*table;
 	char			*cmd;
-	
+
+	if (argc != 1 || argv[1])
+	{
+		write(2, "please execute with no arguments!\n", 34);
+		return (0);
+	}
+	table = NULL;
+	table = ft_create_cmd_table(table, envp);
+	if (!table)
+		return (0);
 	while (1)
 	{
-		table = NULL;
 		cmd = readline("minishell$ ");
 		if (cmd != NULL)
 		{
 			if (!ft_strncmp(cmd, "exit", 5))
 			{
 				free(cmd);
+				//free table
 				return (0);
 			}
 			add_history(cmd);
@@ -110,15 +119,15 @@ int	main(void)
 			if (!tokens)
 				continue ;
 			ft_print_tokens(tokens); 
-			table = ft_add_commands(table, tokens);
-			if (!table)
-				continue ;
+			if (!ft_add_commands(&table, tokens))
+				continue ;	
 			ft_print_table(table);
 			ft_print_files(table->files);
 			puts("");
-			ft_free_files(table->files);
-			ft_free_commands(table->commands);
-			free(table);
+			ft_free_files(&table->files);
+			ft_free_commands(&table->commands);
+			table->files = NULL;
+			table->commands = NULL;
 		}
 	}
 	return (0);

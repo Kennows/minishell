@@ -65,7 +65,8 @@ char	*ft_strappend(char *dest, char *src)
 	return (new);
 }
 
-int	ft_readline_heredoc(char **str, char *delimiter, int quoted)
+int	ft_readline_heredoc(char **str, char *delimiter, int quoted, \
+		t_command_table *table)
 {
 	char	*buf;
 
@@ -76,7 +77,7 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted)
 		{
 			if (!quoted)
 			{
-				buf = ft_handle_env(buf, 0, 1, 1);
+				buf = ft_handle_env_heredoc(buf, 0, table->envp);
 				if (!buf)
 					return (0);
 			}
@@ -93,7 +94,7 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted)
 	}
 }
 
-int	ft_write_in_heredoc(int fd, char **delim)
+int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 {
 	char	*str;
 	int		quoted;
@@ -104,11 +105,11 @@ int	ft_write_in_heredoc(int fd, char **delim)
 		quoted = 0;
 	else
 	{
-		*delim = ft_handle_quotes(*delim, 0);
+		*delim = ft_handle_quotes(&**delim, 0);
 		if (!*delim)
 			return (0);
 	}
-	if (!ft_readline_heredoc(&str, *delim, quoted))
+	if (!ft_readline_heredoc(&str, *delim, quoted, table))
 		return (0);
 	if (str)
 	{
@@ -118,7 +119,7 @@ int	ft_write_in_heredoc(int fd, char **delim)
 	return (1);
 }
 
-int	ft_create_heredoc(char **delim, char *filename)
+int	ft_create_heredoc(char **delim, char *filename, t_command_table *table)
 {
 	int	fd;
 
@@ -128,7 +129,7 @@ int	ft_create_heredoc(char **delim, char *filename)
 		write(2, "error creating heredoc\n", 23);
 		return (0);
 	}
-	if (!ft_write_in_heredoc(fd, delim))
+	if (!ft_write_in_heredoc(fd, &*delim, table))
 	{
 		write(2, "error while writing in heredoc\n", 31);
 		close(fd);
