@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/29 15:18:29 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/29 15:21:08 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/06 11:20:38 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,8 @@ char	**ft_strarrdup(char **arr)
 	i = 0;
 	while (arr && arr[len])
 		len++;
-	dup = malloc(sizeof (char *) * len + 1);
+	printf("env len %d\n", len);
+	dup = malloc(sizeof (char *) * (len + 1));
 	if (!dup)
 		return (NULL);
 	while (i < len)
@@ -44,6 +45,7 @@ char	**ft_strarrdup(char **arr)
 		}
 		i++;
 	}
+	printf("i = %d\n", i);
 	dup[i] = NULL;
 	return (dup);
 }
