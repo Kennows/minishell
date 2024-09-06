@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 16:22:21 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/27 19:02:54 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/06 11:49:03 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,11 +87,26 @@ void	ft_print_files(t_file *files)
 	}
 }
 
+int	ft_execute(t_command_table *table)
+{
+	t_command	*cmd;
+
+	cmd = table->commands;
+	while (cmd != NULL)
+	{
+		if (cmd->type == BUILT_IN)
+			ft_builtin(cmd);
+		cmd = cmd->next;
+	}
+	return (0);
+}
+
 int	main(int argc, char **argv, char **envp)
 {
 	t_lex			*tokens;
 	t_command_table	*table;
 	char			*cmd;
+	int	i = 0;
 
 	if (argc != 1 || argv[1])
 	{
@@ -110,6 +125,13 @@ int	main(int argc, char **argv, char **envp)
 			if (!ft_strncmp(cmd, "exit", 5))
 			{
 				free(cmd);
+				if (table->envp)
+				{
+					while (table->envp[i])
+						free(table->envp[i++]);
+					free(table->envp);
+				}
+				free(table);
 				//free table
 				return (0);
 			}
@@ -124,6 +146,7 @@ int	main(int argc, char **argv, char **envp)
 			ft_print_table(table);
 			ft_print_files(table->files);
 			puts("");
+			ft_execute(table);
 			ft_free_files(&table->files);
 			ft_free_commands(&table->commands);
 			table->files = NULL;

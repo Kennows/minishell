@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 16:54:44 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/29 15:27:25 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/06 12:29:33 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,6 +140,9 @@ char			*ft_getenv(char *str, char **envp);
 char			*ft_replace_var_heredoc(char *str, int start, int end, char **envp);
 char			*ft_handle_env_heredoc(char *str, int start, char **envp);
 int			ft_getnenv(char *str, char **env, int n, char **envp);
+
+void			ft_env(char **env, int export);
+int			ft_builtin(t_command *cmd);
 
 void	ft_print_table(t_command_table *t);
 #endif
