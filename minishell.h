@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 16:54:44 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/06 12:29:33 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/07 20:28:02 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,7 @@ t_command_table	*ft_create_cmd_table(t_command_table *table, char **envp);
 t_command		*ft_parse(t_lex *tokens);
 
 int				ft_isnumber(const char *str);
+char			**ft_array_cpynfree(char **dest, char **src, char *ignore);
 char			**ft_array_append(char **array, char *str);
 
 void			ft_print_tokens(t_lex *t);
@@ -143,6 +144,7 @@ int			ft_getnenv(char *str, char **env, int n, char **envp);
 
 void			ft_env(char **env, int export);
 int			ft_builtin(t_command *cmd);
+void			ft_free_array(char **array);
 
 void	ft_print_table(t_command_table *t);
 #endif

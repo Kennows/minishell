@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/26 11:50:07 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 19:20:35 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/07 20:26:26 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,24 +27,30 @@ int	ft_isnumber(const char *str)
 	return (1);
 }
 
-char	**ft_array_cpynfree(char **dest, char **src)
+char	**ft_array_cpynfree(char **dest, char **src, char *ignore)
 {
 	int	i;
+	int	i2;
 
-	i = 0;
-	if (src != NULL)
+	i = -1;
+	i2 = 0;
+	while (src && src[++i] != NULL)
 	{
-		while (src[i] != NULL)
-		{
-			dest[i] = ft_strdup(src[i]);
-			if (!dest[i])
-				return (NULL);
-			free(src[i]);
+		if (ignore != NULL && !ft_strncmp(ignore, src[i], \
+					ft_strlen(ignore + 1)))
 			i++;
+		if (src[i] == NULL)
+			break ;
+		dest[i2] = ft_strdup(src[i]);
+		if (!dest[i2++])
+		{
+			ft_free_array(dest);
+			ft_free_array(src);
+			return (NULL);
 		}
-		free(src[i]);
-		free(src);
 	}
+	dest[i2] = NULL;
+	ft_free_array(src);
 	return (dest);
 }
 
@@ -59,13 +65,20 @@ char	**ft_array_append(char **array, char *str)
 			i++;
 	new = malloc((i + 2) * sizeof(char *));
 	if (!new)
+	{
+		ft_free_array(array);
 		return (NULL);
-	new = ft_array_cpynfree(new, array);
+	}
+	new = ft_array_cpynfree(new, array, NULL);
 	if (!new)
 		return (NULL);
 	new[i] = ft_strdup(str);
 	if (!new[i])
+	{
+		ft_free_array(new);
+		ft_free_array(array);
 		return (NULL);
+	}
 	new[++i] = NULL;
 	return (new);
 }

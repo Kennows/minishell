@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/29 15:18:29 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/06 11:20:38 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/07 20:21:13 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,16 @@ int	ft_is_whitespace(char c)
 	return (0);
 }
 
+void	ft_free_array(char **arr)
+{
+	int	i;
+
+	i = 0;
+	while (arr[i])
+		free(arr[i++]);
+	free(arr);
+}
+
 char	**ft_strarrdup(char **arr)
 {
 	char	**dup;
@@ -30,7 +40,6 @@ char	**ft_strarrdup(char **arr)
 	i = 0;
 	while (arr && arr[len])
 		len++;
-	printf("env len %d\n", len);
 	dup = malloc(sizeof (char *) * (len + 1));
 	if (!dup)
 		return (NULL);
@@ -45,7 +54,6 @@ char	**ft_strarrdup(char **arr)
 		}
 		i++;
 	}
-	printf("i = %d\n", i);
 	dup[i] = NULL;
 	return (dup);
 }
