@@ -70,7 +70,7 @@ static char	**ft_allocate(char const *s)
 	return (new);
 }
 
-static void	ft_free_array(char **arr)
+void	ft_free_array(char **arr)
 {
 	int	i;
 
