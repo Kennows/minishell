@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 17:15:17 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/07 19:44:00 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/08/29 14:21:45 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,8 @@ t_command	*ft_parse_pipes(t_command_table *table, t_command *head, \
 
 t_command_table	*ft_create_cmd_table(t_command_table *table, char **envp)
 {
+	char	*shell;
+
 	table = malloc(sizeof(t_command_table));
 	if (!table)
 	{
@@ -101,11 +103,16 @@ t_command_table	*ft_create_cmd_table(t_command_table *table, char **envp)
 	}
 	table->commands = NULL;
 	table->files = NULL;
-	table->envp = ft_strarrdup(envp);
+	table->envp = NULL;
+	shell = ft_strjoin("SHELL=", getenv("PWD"));
+	if (shell)
+		shell = ft_strcombine(shell, "/minishell");
+	table->envp = ft_create_envp(&*table->envp, envp, &*shell);
+	free(shell);
 	if (!table->envp)
 	{
-		free(table);
 		write(2, "error creating envp\n", 20);
+		free(table);
 		return (NULL);
 	}
 	return (table);

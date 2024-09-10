@@ -12,35 +12,6 @@
 
 #include "minishell.h"
 
-void	ft_env(char **env, int export)
-{
-	int	i;
-	int	c;
-
-	i = -1;
-	c = 0;
-	while (env && env[++i])
-	{
-		if (export)
-		{
-			write(1, "declare -x ", 11);
-			while (env[i][c] && env[i][c] != '=')
-				write(1, &env[i][c++], 1);
-			if (env[i][c])
-			{
-				write(1, "=\"", 2);
-				while (env[i][c])
-					write(1, &env[i][++c], 1);
-				write(1, "\"", 1);
-				c = 0;
-			}
-			write(1, "\n", 1);
-		}
-		else if (ft_strchr(env[i], '='))
-			printf("%s\n", env[i]);
-	}
-}
-
 int	ft_export(t_command *cmd)
 {
 	int	i;
@@ -52,8 +23,7 @@ int	ft_export(t_command *cmd)
 	{
 		while (cmd->argv[i])
 		{
-			*cmd->envp = ft_array_append(*cmd->envp, cmd->argv[i]);
-			if (!*cmd->envp)
+			if (ft_replace_env_value(&*cmd->envp, cmd->argv[i]))
 				return (1);
 			i++;
 		}
@@ -65,10 +35,8 @@ int	ft_unset(t_command *cmd)
 {
 	char	**dup;
 	int	len;
-	int	i;
 
 	len = 0;
-	i = -1;
 	while (cmd->envp && cmd->envp[0][len] != NULL)
 		len++;
 	dup = malloc(sizeof (char *) * len);
@@ -81,8 +49,44 @@ int	ft_unset(t_command *cmd)
 	return (0);
 }
 
+void	ft_pwd(void)
+{
+	char *cwd;
 
-int	ft_builtin(t_command *cmd)
+	cwd = getcwd(NULL, 0);
+	printf("%s\n", cwd);
+	free(cwd);
+}
+
+int	ft_cd(t_command *cmd)
+{
+	char	*cwd;
+	char	*oldpwd;
+
+	if (cmd->argc > 2)
+		write(2, "minishell: cd: too many arguments\n", 34);
+	else if (cmd->argc == 2)
+	{
+		cwd = getcwd(NULL, 0);
+		oldpwd = ft_strjoin("OLDPWD=", cwd);
+		free(cwd);
+		if (!oldpwd)
+			return (1);
+		if (chdir(cmd->argv[1]))
+		{
+			free(oldpwd);
+			perror("minishell: cd");
+			return (-1);
+		}
+		if (ft_update_pwd(cmd, &oldpwd))
+		{
+			return (1);
+		}
+	}
+	return (0);
+}
+
+int	ft_builtin(t_command *cmd, t_command_table *table)
 {
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "env", 4))
 		ft_env(*cmd->envp, 0);
@@ -90,5 +94,13 @@ int	ft_builtin(t_command *cmd)
 		ft_export(cmd);
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "unset", 6))
 		ft_unset(&*cmd);
+	if (cmd->argv && !ft_strncmp(cmd->argv[0], "pwd", 4))
+		ft_pwd();
+	if (cmd->argv && !ft_strncmp(cmd->argv[0], "cd", 3))
+		ft_cd(cmd);
+	if (cmd->argv && !ft_strncmp(cmd->argv[0], "echo", 5))
+		ft_echo(cmd);
+	if (cmd->argv && !ft_strncmp(cmd->argv[0], "exit", 5))
+		return (ft_exit(table));
 	return (0);
 }

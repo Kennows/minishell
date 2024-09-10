@@ -136,15 +136,32 @@ char			*ft_handle_env(char *str, int start, char **envp);
 char			*ft_expand(char *str, char **envp);
 void			ft_command_type(t_command *cmd);
 int			ft_is_whitespace(char c);
-char			**ft_strarrdup(char **arr);
+char			**ft_envpdup(char **envp);
 char			*ft_getenv(char *str, char **envp);
 char			*ft_replace_var_heredoc(char *str, int start, int end, char **envp);
 char			*ft_handle_env_heredoc(char *str, int start, char **envp);
 int			ft_getnenv(char *str, char **env, int n, char **envp);
 
 void			ft_env(char **env, int export);
-int			ft_builtin(t_command *cmd);
+int			ft_builtin(t_command *cmd, t_command_table *table);
 void			ft_free_array(char **array);
+int			ft_replace_env_value(char ***envp, char *new);
+char	*ft_strcombine(char *dest, char *src);
+
+int	ft_builtin(t_command *cmd, t_command_table *table);
+int	ft_echo(t_command *cmd);
+int	ft_cd(t_command *cmd);
+void	ft_pwd(void);
+int	ft_export(t_command *cmd);
+int	ft_unset(t_command *cmd);
+void	ft_env(char **env, int export);
+int	ft_exit(t_command_table *table);
+
+int	ft_arrlen(char **arr);
+char	**ft_create_envp(char **mini_envp, char **envp, char *shell);
+char	**ft_envpdup(char **envp);
+int	ft_update_pwd(t_command *cmd, char **oldpwd);
+int	ft_envcmp(char *env, char *new);
 
 void	ft_print_table(t_command_table *t);
 #endif
