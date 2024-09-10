@@ -95,7 +95,8 @@ int	ft_execute(t_command_table *table)
 	while (cmd != NULL)
 	{
 		if (cmd->type == BUILT_IN)
-			ft_builtin(cmd);
+			if (ft_builtin(cmd, table) == -123)
+				return (-123);
 		cmd = cmd->next;
 	}
 	return (0);
@@ -106,7 +107,6 @@ int	main(int argc, char **argv, char **envp)
 	t_lex			*tokens;
 	t_command_table	*table;
 	char			*cmd;
-	int	i = 0;
 
 	if (argc != 1 || argv[1])
 	{
@@ -114,6 +114,7 @@ int	main(int argc, char **argv, char **envp)
 		return (0);
 	}
 	table = NULL;
+	printf("%s\n", argv[argc - 1]);
 	table = ft_create_cmd_table(table, envp);
 	if (!table)
 		return (0);
@@ -126,13 +127,9 @@ int	main(int argc, char **argv, char **envp)
 			{
 				free(cmd);
 				if (table->envp)
-				{
-					while (table->envp[i])
-						free(table->envp[i++]);
-					free(table->envp);
-				}
+					ft_free_array(table->envp);
 				free(table);
-				//free table
+				printf("exit\n");
 				return (0);
 			}
 			add_history(cmd);
@@ -146,7 +143,8 @@ int	main(int argc, char **argv, char **envp)
 			ft_print_table(table);
 			ft_print_files(table->files);
 			puts("");
-			ft_execute(table);
+			if (ft_execute(table) == -123)
+				return (0);
 			ft_free_files(&table->files);
 			ft_free_commands(&table->commands);
 			table->files = NULL;
