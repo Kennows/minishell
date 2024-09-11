@@ -53,16 +53,27 @@ int	ft_redir_syntax_check(t_lex **token, t_command **cmd, \
 		else if ((*token)->type == HERE_DOC)
 			write(2, "minishell: syntax error near unexpected token `<<'\n", 51);
 		ft_free_all(*token, *cmd, *table);
-/*		ft_free_tokens(&*token);
-		*token = NULL;
-		ft_free_commands(&(*table)->commands);
-		puts("?");
-		(*table)->commands = NULL;
-		ft_free_files(&(*table)->files);
-		puts("!");
-		(*table)->files = NULL; */
-	//	free(*table);
 		return (0);
 	}
 	return (1);
+}
+
+int ft_export_syntax_check(char *arg)
+{
+	int i;
+
+	i = 1;
+	if (ft_isalpha(arg[0]) || arg[0] == '_')
+	{
+		while (arg[i] && (ft_isalnum(arg[i]) || arg[i] == '_'))
+			i++;
+		if (arg[i] == '\0')
+			return (1);
+	}
+	i = 0;
+	write(2, "minishell: export: `", 20);
+	while (arg[i])
+		write(2, &arg[i++], 1);
+	write(2, "': not a valid identifier\n", 26);
+	return (0);
 }

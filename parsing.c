@@ -107,6 +107,11 @@ t_command_table	*ft_create_cmd_table(t_command_table *table, char **envp)
 	shell = ft_strjoin("SHELL=", getenv("PWD"));
 	if (shell)
 		shell = ft_strcombine(shell, "/minishell");
+	if (!shell)
+	{
+		free(table);
+		return (NULL);
+	}
 	table->envp = ft_create_envp(&*table->envp, envp, &*shell);
 	free(shell);
 	if (!table->envp)

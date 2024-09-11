@@ -123,6 +123,7 @@ char			*ft_heredoc_name(void);
 int				ft_pipe_syntax_check(t_lex **tokens, t_command **cmd);
 int				ft_redir_syntax_check(t_lex **token, t_command **cmd, \
 										t_command_table **table);
+int ft_export_syntax_check(char *arg);
 
 void			ft_free_all(t_lex *token, t_command *cmd, \
 							t_command_table *table);
@@ -162,6 +163,7 @@ char	**ft_create_envp(char **mini_envp, char **envp, char *shell);
 char	**ft_envpdup(char **envp);
 int	ft_update_pwd(t_command *cmd, char **oldpwd);
 int	ft_envcmp(char *env, char *new);
+int	ft_envlen(char *env);
 
 void	ft_print_table(t_command_table *t);
 #endif

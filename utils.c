@@ -36,8 +36,9 @@ char	**ft_array_cpynfree(char **dest, char **src, char *ignore)
 	i2 = 0;
 	while (src && src[++i] != NULL)
 	{
-		if (ignore != NULL && !ft_strncmp(ignore, src[i], \
-					ft_strlen(ignore + 1)))
+		if (ignore != NULL && !ft_strncmp(ignore, src[i], ft_strlen(ignore)) \
+			&& (src[i][ft_strlen(ignore)] == '=' \
+			|| src[i][ft_strlen(ignore)] == '\0'))
 			i++;
 		if (src[i] == NULL)
 			break ;
@@ -90,6 +91,8 @@ char	*ft_str_replace(char *str, char *substitute, int start, int end)
 	int		i;
 
 	i = -1;
+	if (str[start] == '$')
+		start++;
 	len = ((ft_strlen(str) + ft_strlen(substitute)) - (end - start));
 	new = malloc(sizeof(char) * (len + 1));
 	if (!new)

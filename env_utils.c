@@ -28,21 +28,33 @@ char	*ft_getenv(char *str, char **envp)
 	return (NULL);
 }
 
+int	ft_envlen(char *env)
+{
+	int	i;
+
+	i = 0;
+	while (env[i] && env[i] != '=')
+		i++;
+	return (i);
+}
+
 char	**ft_envpdup(char **envp)
 {
 	char	**dup;
 	int	i;
 	int	i2;
 
-	i = 0;
+	i = -1;
 	i2 = 0;
 	dup = malloc(sizeof (char *) * (ft_arrlen(envp) + 1));
 	if (!dup)
 		return (NULL);
-	while (i < ft_arrlen(envp))
+	while (++i < ft_arrlen(envp))
 	{
-		if (ft_strchr(envp[i], '=') && envp[i][0] != '_')
+		if (ft_strchr(envp[i], '='))
 		{
+			if (ft_envlen(envp[i]) == 1 && envp[i][0] == '_')
+				continue;
 			dup[i2] = ft_strdup(envp[i]);
 			if (!dup[i2++])
 			{
@@ -50,34 +62,9 @@ char	**ft_envpdup(char **envp)
 				return (NULL);
 			}
 		}
-		i++;
 	}
 	dup[i2] = NULL;
 	return (dup);
-}
-
-int	ft_update_pwd(t_command *cmd, char **oldpwd)
-{
-	char	*cwd;
-	char	*pwd;
-	int		result;
-	
-	cwd = getcwd(NULL, 0);
-	pwd = ft_strjoin("PWD=", cwd);
-	free(cwd);
-	if (!pwd)
-	{
-		free(*oldpwd);
-		return (1);
-	}
-	result = ft_replace_env_value(&*cmd->envp, pwd);
-	free(pwd);
-	if (result == 0)
-		result = ft_replace_env_value(&*cmd->envp, *oldpwd);
-	free(*oldpwd);
-	if (result != 0)
-		return (1);
-	return (0);
 }
 
 int	ft_envcmp(char *env, char *new)

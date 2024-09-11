@@ -23,6 +23,8 @@ int	ft_export(t_command *cmd)
 	{
 		while (cmd->argv[i])
 		{
+			if (!ft_export_syntax_check(cmd->argv[i]))
+				return (1);
 			if (ft_replace_env_value(&*cmd->envp, cmd->argv[i]))
 				return (1);
 			i++;
@@ -35,17 +37,28 @@ int	ft_unset(t_command *cmd)
 {
 	char	**dup;
 	int	len;
+	int	i;
 
-	len = 0;
-	while (cmd->envp && cmd->envp[0][len] != NULL)
-		len++;
-	dup = malloc(sizeof (char *) * len);
-	if (!dup)
-		return (1);
-	dup = ft_array_cpynfree(dup, &**cmd->envp, cmd->argv[1]);
-	if (!dup)
-		return (1);
-	*cmd->envp = dup;
+	i = -1;
+	if (cmd->argv[1])
+	{
+		len = ft_strlen(cmd->argv[1]);
+		while (cmd->envp[0][++i])
+		{
+			if (len == ft_envlen(cmd->envp[0][i]) && \
+			!ft_strncmp(cmd->envp[0][i], cmd->argv[1], len))
+			{
+				dup = malloc(sizeof (char *) * ft_arrlen(*cmd->envp));
+				if (!dup)
+					return (1);
+				dup = ft_array_cpynfree(dup, &**cmd->envp, cmd->argv[1]);
+				if (!dup)
+					return (1);
+				*cmd->envp = dup;
+				return (0);
+			}
+		}
+	}
 	return (0);
 }
 

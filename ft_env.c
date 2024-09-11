@@ -70,6 +70,30 @@ int	ft_increment_shlvl(char ***mini_envp)
 	return (1);
 }
 
+int	ft_update_pwd(t_command *cmd, char **oldpwd)
+{
+	char	*cwd;
+	char	*pwd;
+	int		result;
+	
+	cwd = getcwd(NULL, 0);
+	pwd = ft_strjoin("PWD=", cwd);
+	free(cwd);
+	if (!pwd)
+	{
+		free(*oldpwd);
+		return (1);
+	}
+	result = ft_replace_env_value(&*cmd->envp, pwd);
+	free(pwd);
+	if (result == 0)
+		result = ft_replace_env_value(&*cmd->envp, *oldpwd);
+	free(*oldpwd);
+	if (result != 0)
+		return (1);
+	return (0);
+}
+
 char	**ft_empty_envp(char **mini_envp)
 {
 	char	*pwd;

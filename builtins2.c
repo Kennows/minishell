@@ -21,10 +21,16 @@ int	ft_echo(t_command *cmd)
 	nl = 1;
 	while (cmd->argv[i])
 	{
-		if (i == 1 && !ft_strncmp(cmd->argv[1], "-n", 3))
+		if (i == 1 && !ft_strncmp(cmd->argv[1], "-n", 2))
 		{
-			nl = 0;
-			i++;
+			nl = 1;
+			while (cmd->argv[1][nl] == 'n')
+				nl++;
+			if (cmd->argv[1][nl] == '\0')
+			{
+				nl = 0;
+				i++;
+			}
 		}
 		else if (i > 1)
 			printf(" ");
