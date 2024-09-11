@@ -15,26 +15,25 @@
 int	ft_echo(t_command *cmd)
 {
 	int	i;
+	int	i2;
 	int	nl;
 
-	i = 1;
+	i = 0;
 	nl = 1;
+	while (!ft_strncmp(cmd->argv[++i], "-n", 2))
+	{
+		i2 = 1;
+		while (cmd->argv[i][i2] == 'n')
+			i2++;
+		if (cmd->argv[i][i2] != '\0')
+			break ;
+		nl = 0;	
+	}
 	while (cmd->argv[i])
 	{
-		if (i == 1 && !ft_strncmp(cmd->argv[1], "-n", 2))
-		{
-			nl = 1;
-			while (cmd->argv[1][nl] == 'n')
-				nl++;
-			if (cmd->argv[1][nl] == '\0')
-			{
-				nl = 0;
-				i++;
-			}
-		}
-		else if (i > 1)
-			printf(" ");
 		printf("%s", cmd->argv[i++]);
+		if (cmd->argv[i])
+			printf(" ");
 	}
 	if (nl)
 		printf("\n");
