@@ -16,11 +16,6 @@ int	ft_getnenv(char *str, char **env, int n, char **envp)
 {
 	char	*temp;
 
-	if (str[0] == '$')
-	{
-		str++;
-		n--;
-	}
 	temp = malloc(sizeof(char) * n);
 	if (!temp)
 		return (0);
@@ -55,8 +50,6 @@ char	*ft_replace_var(char *str, int start, int end, char **envp)
 		if (!str)
 			return (NULL);
 		end = (start + ft_strlen(env));
-		if (str[start] == '$')
-			end++;		
 		free(env);
 	}
 	if (str[end] == '\0')
@@ -68,9 +61,8 @@ char	*ft_replace_var(char *str, int start, int end, char **envp)
 
 int	ft_find_env_start(char *str, int i)
 {
-	int	quoted;
+	static int	quoted = 0;
 
-	quoted = 0;
 	while (str[i] && str[i] != '$')
 	{
 		if (str[i] == '"' && quoted == 0)
@@ -82,8 +74,6 @@ int	ft_find_env_start(char *str, int i)
 				continue ;
 		i++;
 	}
-	if (str[i] == '$' && quoted)
-		return (i - 1);
 	return (i);
 }
 
@@ -97,11 +87,9 @@ char	*ft_handle_env(char *str, int start, char **envp)
 	if (!new)
 		return (NULL);
 	start = ft_find_env_start(new, start);
-	if (new[start] == '$' || new[start] == '"')
+	if (new[start] == '$')
 	{
 		end = start + 1;
-		if (new[start] == '"')
-			end++;
 		while (ft_isalnum(new[end]))
 			end++;
 		new = ft_replace_var(new, start, end, envp);

@@ -91,8 +91,6 @@ char	*ft_str_replace(char *str, char *substitute, int start, int end)
 	int		i;
 
 	i = -1;
-	if (str[start] == '$')
-		start++;
 	len = ((ft_strlen(str) + ft_strlen(substitute)) - (end - start));
 	new = malloc(sizeof(char) * (len + 1));
 	if (!new)
