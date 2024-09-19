@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/26 11:55:02 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 16:40:11 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/18 19:55:23 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,10 @@ int	ft_pipe_syntax_check(t_lex **tokens, t_command **cmd)
 		ft_free_tokens(&*tokens);
 		return (0);
 	}
-	(*cmd)->token_start = *tokens;
+	(*cmd)->token_start = &**tokens;
 	while ((*tokens)->next != NULL && (*tokens)->next->type != PIPE)
 		*tokens = (*tokens)->next;
-	(*cmd)->token_end = *tokens;
+	(*cmd)->token_end = &**tokens;
 	if ((*tokens)->next != NULL)
 	{
 		if ((*tokens)->next->next == NULL)
@@ -35,6 +35,18 @@ int	ft_pipe_syntax_check(t_lex **tokens, t_command **cmd)
 			return (0);
 		}
 	}
+	return (1);
+}
+
+int	ft_print_redir_env_error(char *str)
+{
+	int	i;
+
+	i = ft_find_env_start(str, 0);
+	write(2, "minishell: ", 11);
+	while (str[i])
+		write(2, &str[i++], 1);
+	write(2, ": ambiguous redirect\n", 21);
 	return (1);
 }
 
@@ -58,16 +70,16 @@ int	ft_redir_syntax_check(t_lex **token, t_command **cmd, \
 	return (1);
 }
 
-int ft_export_syntax_check(char *arg)
+int	ft_export_syntax_check(char *arg)
 {
-	int i;
+	int	i;
 
 	i = 1;
 	if (ft_isalpha(arg[0]) || arg[0] == '_')
 	{
-		while (arg[i] && (ft_isalnum(arg[i]) || arg[i] == '_'))
+		while (arg[i] != '\0' && (ft_isalnum(arg[i]) || arg[i] == '_'))
 			i++;
-		if (arg[i] == '\0')
+		if (arg[i] == '\0' || arg[i] == '=')
 			return (1);
 	}
 	i = 0;

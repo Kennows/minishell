@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/10 15:01:30 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/10 15:01:42 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/18 19:45:27 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,15 +49,15 @@ int	ft_increment_shlvl(char ***mini_envp)
 	i = 0;
 	while (mini_envp[0][i] && ft_strncmp("SHLVL=", mini_envp[0][i], 6))
 		i++;
-    if (!mini_envp[0][i])
-    {
-        if (ft_replace_env_value(&*mini_envp, "SHLVL=1"))
-            return (0);
-        return (1);
-    }
+	if (!mini_envp[0][i])
+	{
+		if (ft_replace_env_value(&*mini_envp, "SHLVL=1"))
+			return (0);
+		return (1);
+	}
 	level = ft_itoa(ft_atoi(mini_envp[0][i] + 6) + 1);
 	if (!level)
-		return (0);	
+		return (0);
 	free(mini_envp[0][i]);
 	mini_envp[0][i] = ft_strjoin("SHLVL=", level);
 	free(level);
@@ -70,27 +70,32 @@ int	ft_increment_shlvl(char ***mini_envp)
 	return (1);
 }
 
-int	ft_update_pwd(t_command *cmd, char **oldpwd)
+int	ft_update_pwd(t_command *cmd, char *oldpwd)
 {
-	char	*cwd;
 	char	*pwd;
 	int		result;
-	
-	cwd = getcwd(NULL, 0);
-	pwd = ft_strjoin("PWD=", cwd);
-	free(cwd);
+
+	pwd = getcwd(NULL, 0);
 	if (!pwd)
 	{
-		free(*oldpwd);
+		write(2, "getcwd failed while updating pwd\n", 33);
+		return (1);
+	}
+	if (!ft_strprepend(&pwd, "PWD="))
+	{
+		free(pwd);
+		write(2, "ft_strprepend failed while updating pwd\n", 40);
 		return (1);
 	}
 	result = ft_replace_env_value(&*cmd->envp, pwd);
 	free(pwd);
 	if (result == 0)
-		result = ft_replace_env_value(&*cmd->envp, *oldpwd);
-	free(*oldpwd);
+		result = ft_replace_env_value(&*cmd->envp, oldpwd);
 	if (result != 0)
+	{
+		write(2, "error updating pwd\n", 19);
 		return (1);
+	}
 	return (0);
 }
 
@@ -101,51 +106,51 @@ char	**ft_empty_envp(char **mini_envp)
 	mini_envp = malloc(sizeof (char *) * 4);
 	if (!mini_envp)
 		return (NULL);
-    mini_envp[0] = ft_strdup("OLDPWD");
-    if (mini_envp[0])
-    {
-        pwd = getcwd(NULL, 0);
-	    mini_envp[1] = ft_strjoin("PWD=", pwd);
-	    free(pwd);
-	    if (mini_envp[1])
-	    {
-        	mini_envp[2] = ft_strdup("SHLVL=1");
-	        if (mini_envp[2])
-            {
-                mini_envp[3] = NULL;
-                return (mini_envp);
-            }
-        }
-    }
-    ft_free_array(mini_envp);
+	mini_envp[0] = ft_strdup("OLDPWD");
+	if (mini_envp[0])
+	{
+		pwd = getcwd(NULL, 0);
+		mini_envp[1] = ft_strjoin("PWD=", pwd);
+		free(pwd);
+		if (mini_envp[1])
+		{
+			mini_envp[2] = ft_strdup("SHLVL=1");
+			if (mini_envp[2])
+			{
+				mini_envp[3] = NULL;
+				return (mini_envp);
+			}
+		}
+	}
+	ft_free_array(mini_envp);
 	return (NULL);
 }
 
 char	**ft_create_envp(char **mini_envp, char **envp, char *shell)
 {
-    if (!envp || !*envp)
+	if (!envp || !*envp)
 	{
+		free(shell);
 		mini_envp = ft_empty_envp(&*mini_envp);
-		if (!mini_envp)
-		{
-			write(2, "error creating envp\n", 20);
-			return (NULL);
-		}
+		if (mini_envp)
+			return (mini_envp);
+		write(2, "ft_empty_envp failed while creating envp\n", 41);
 	}
 	else
 	{
 		mini_envp = ft_envpdup(envp);
-		if (!mini_envp)
-			return (NULL);
-		if (!ft_increment_shlvl(&mini_envp))
+		if (mini_envp)
 		{
-			write(2, "error incrementing SHLVL\n", 25);
-			ft_free_array(mini_envp);
-			return (NULL);
+			if (!ft_increment_shlvl(&mini_envp))
+				write(2, "error incrementing shlvl env\n", 29);
+			else if (!ft_replace_env_value(&mini_envp, &*shell))
+			{	
+				free(shell);
+				return (mini_envp);
+			}
+			ft_free_array(&*mini_envp);
 		}
-        if (shell)
-		    if (ft_replace_env_value(&mini_envp, &*shell))
-			    ft_free_array(&*mini_envp);
-    }
-	return (mini_envp);
+		free(shell);
+	}
+	return (NULL);
 }

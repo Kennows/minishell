@@ -12,31 +12,59 @@
 
 #include "minishell.h"
 
-t_lex	*ft_remove_token(t_lex *token)
+t_sub_tok	*ft_remove_subtoken(t_sub_tok *subtoken)
+{
+	t_sub_tok	*next;
+	t_sub_tok	*prev;
+
+	if (subtoken != NULL)
+	{
+		next = subtoken->next;
+		prev = subtoken->prev;
+		if (prev != NULL)
+			prev->next = next;
+		if (next != NULL)
+			next->prev = prev;
+		if (subtoken->str != NULL)
+			free(subtoken->str);
+		subtoken->str = NULL;
+		free(subtoken);
+		subtoken = NULL;
+		if (next != NULL)
+			return (next);
+	}
+	return (NULL);
+}
+
+t_lex	*ft_remove_token(t_lex **token, t_command *cmd)
 {
 	t_lex	*prev;
 	t_lex	*next;
 	t_lex	*current;
 
-	if (token)
+	if (*token != NULL)
 	{
-		prev = token->prev;
-		next = token->next;
+		prev = (*token)->prev;
+		next = (*token)->next;
 		if (prev != NULL)
 			prev->next = next;
 		if (next != NULL)
 			next->prev = prev;
-		current = token;
+		current = (*token);
 		while (current->next != NULL)
 		{
 			current = current->next;
 			current->index--;
 		}
-		if (token->str != NULL)
-			free(token->str);
-		free(token);
-		token = NULL;
-		return (next);
+		if ((*token)->subtoken != NULL)
+			ft_remove_subtoken((*token)->subtoken);
+		if ((*token)->str != NULL)
+			free((*token)->str);
+		if (cmd->token_end != NULL && *token == cmd->token_end)
+			cmd->token_end = NULL;
+		free(*token);
+		*token = next;
+		return (*token);
 	}
 	return (NULL);
 }
@@ -54,12 +82,14 @@ void	ft_free_tokens(t_lex **tokens)
 			temp = (*tokens)->next;
 			if ((*tokens)->str)
 				free((*tokens)->str);
+			ft_remove_subtoken((*tokens)->subtoken);
 			free(*tokens);
 			*tokens = temp;
 			(*tokens)->prev = NULL;
 		}
 		if ((*tokens)->str)
 			free((*tokens)->str);
+		ft_remove_subtoken((*tokens)->subtoken);
 		free(*tokens);
 	}
 	temp = NULL;
@@ -71,13 +101,14 @@ void	ft_free_commands(t_command **cmd)
 	int			i;
 	t_command	*temp;
 
+	while ((*cmd)->prev != NULL)
+		*cmd = (*cmd)->prev;
 	while (cmd && *cmd)
 	{
 		i = 0;
 		temp = (*cmd)->next;
 		if ((*cmd)->argv != NULL)
 		{
-			// tsekkaa leaks
 			while ((*cmd)->argv[i] != NULL)
 				free((*cmd)->argv[i++]);
 			free((*cmd)->argv);

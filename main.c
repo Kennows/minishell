@@ -137,8 +137,8 @@ int	main(int argc, char **argv, char **envp)
 			free(cmd);
 			if (!tokens)
 				continue ;
-			ft_print_tokens(tokens); 
-			if (!ft_add_commands(&table, tokens))
+			ft_print_tokens(tokens);
+			if (!ft_add_commands(&table, &tokens))
 				continue ;	
 			ft_print_table(table);
 			ft_print_files(table->files);

@@ -59,6 +59,7 @@ t_lex	*ft_new_token(char *str, int index)
 	head->index = index;
 	head->next = NULL;
 	head->prev = NULL;
+	head->subtoken = NULL;
 	return (head);
 }
 

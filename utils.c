@@ -45,6 +45,7 @@ char	**ft_array_cpynfree(char **dest, char **src, char *ignore)
 		dest[i2] = ft_strdup(src[i]);
 		if (!dest[i2++])
 		{
+			write(2, "malloc failed while copying an array\n", 37);
 			ft_free_array(dest);
 			ft_free_array(src);
 			return (NULL);
@@ -55,64 +56,85 @@ char	**ft_array_cpynfree(char **dest, char **src, char *ignore)
 	return (dest);
 }
 
-char	**ft_array_append(char **array, char *str)
+int	ft_append_empty_arr(char ***arr, char *str)
+{
+	arr[0] = malloc(sizeof(char *) * 2);
+	if (!arr[0])
+	{
+		write(2, "malloc failed while appending to an empty array\n", 48);
+		return (0);
+	}
+	arr[0][0] = ft_strdup(str);
+	if (!arr[0][0])
+	{
+		free(arr[0]);
+		arr[0] = NULL;
+		write(2, "malloc failed while appending to an empty array\n", 48);
+		return (0);
+	}
+	arr[0][1] = NULL;
+	return (1);
+}
+
+int	ft_array_append(char ***array, char *str)
 {
 	int		i;
 	char	**new;
 
-	i = 0;
-	if (array != NULL)
-		while (array[i] != NULL)
-			i++;
+	if (*array == NULL && ft_append_empty_arr(&*array, str))
+		return (1);
+	else if (*array == NULL)
+		return (0);
+	i = ft_arrlen(*array);
 	new = malloc((i + 2) * sizeof(char *));
 	if (!new)
-	{
-		ft_free_array(array);
-		return (NULL);
-	}
-	new = ft_array_cpynfree(new, array, NULL);
+		write(2, "malloc failed while appending to an array\n", 42);
+	else
+		new = ft_array_cpynfree(new, *array, NULL);
 	if (!new)
-		return (NULL);
+		return (0);
 	new[i] = ft_strdup(str);
 	if (!new[i])
 	{
+		write(2, "malloc failed while appending to an array\n", 42);
 		ft_free_array(new);
-		ft_free_array(array);
-		return (NULL);
+		return (0);
 	}
 	new[++i] = NULL;
-	return (new);
+	*array = new;
+	return (1);
 }
 
 char	*ft_str_replace(char *str, char *substitute, int start, int end)
 {
-	int		len;
 	char	*new;
-	int		i;
 
-	i = -1;
-	len = ((ft_strlen(str) + ft_strlen(substitute)) - (end - start));
-	new = malloc(sizeof(char) * (len + 1));
+	if (substitute)
+		new = malloc(sizeof(char) * ((ft_strlen(str) + ft_strlen(substitute) \
+									- (end - start) + 1)));
+	else
+		new = malloc(sizeof(char) * (ft_strlen(str) - (end - start) + 1));
 	if (!new)
 	{
 		free(str);
-		free(substitute);
+		if (substitute)
+			free(substitute);
+		write(2, "malloc failed while expanding env\n", 34);
 		return (NULL);
 	}
-	while (++i < start)
-		new[i] = str[i];
+	ft_strlcpy(new, str, start + 1);
 	while (substitute && *substitute)
-		new[i++] = *(substitute++);
+		new[start++] = *(substitute++);
 	while (str[end])
-		new[i++] = str[end++];
-	new[i] = '\0';
+		new[start++] = str[end++];
+	new[start] = '\0';
 	free(str);
 	return (new);
 }
 
 void	ft_command_type(t_command *cmd)
 {
-	if (cmd->argv[0])
+	if (cmd->argv && cmd->argv[0])
 	{
 		if (!ft_strncmp(cmd->argv[0], "echo", 5) || \
 			!ft_strncmp(cmd->argv[0], "cd", 3) || \

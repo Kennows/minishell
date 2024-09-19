@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/28 19:21:02 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 19:22:19 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/18 19:56:57 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,23 +28,22 @@ void	ft_init_command(t_command *cmd, t_command_table *table)
 	cmd->prev = NULL;
 }
 
-int	ft_init_argv(t_command *cmd, t_command_table *table)
+void	ft_init_subtoken(t_sub_tok *subtoken, int quote)
 {
-	int	i;
-
-	i = 0;
-	if (cmd->token_end && cmd->token_start)
-		cmd->argc = (cmd->token_end->index - cmd->token_start->index) + 1;
+	subtoken->prev = NULL;
+	subtoken->next = NULL;
+	subtoken->str = NULL;
+	if (quote == '"')
+		subtoken->quote = 2;
+	else if (quote == '\'')
+		subtoken->quote = 1;
 	else
-		cmd->argc = 1;
-	cmd->argv = malloc(sizeof(char *) * (cmd->argc + 1));
-	if (!cmd->argv)
-	{
-		write(2, "malloc failed while creating argv\n", 34);
-		ft_free_all(cmd->token_start, cmd, table);
-		return (0);
-	}
-	while (i <= cmd->argc)
-		cmd->argv[i++] = NULL;
-	return (1);
+		subtoken->quote = 0;
+}
+
+void	ft_init_table(t_command_table *table)
+{
+	table->commands = NULL;
+	table->files = NULL;
+	table->envp = NULL;
 }

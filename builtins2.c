@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/10 15:07:16 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/10 15:07:23 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/18 19:56:14 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,16 @@ int	ft_echo(t_command *cmd)
 
 	i = 0;
 	nl = 1;
-	while (!ft_strncmp(cmd->argv[++i], "-n", 2))
+	while (cmd->argc > 1 && !ft_strncmp(cmd->argv[++i], "-n", 2))
 	{
 		i2 = 1;
 		while (cmd->argv[i][i2] == 'n')
 			i2++;
 		if (cmd->argv[i][i2] != '\0')
 			break ;
-		nl = 0;	
+		nl = 0;
 	}
-	while (cmd->argv[i])
+	while (cmd->argv[i] && i > 0)
 	{
 		printf("%s", cmd->argv[i++]);
 		if (cmd->argv[i])

@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 11:34:11 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/07 20:28:41 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/18 19:52:53 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ int	ft_export(t_command *cmd)
 int	ft_unset(t_command *cmd)
 {
 	char	**dup;
-	int	len;
-	int	i;
+	int		len;
+	int		i;
 
 	i = -1;
 	if (cmd->argv[1])
@@ -62,58 +62,67 @@ int	ft_unset(t_command *cmd)
 	return (0);
 }
 
-void	ft_pwd(void)
+int	ft_pwd(void)
 {
-	char *cwd;
+	char	*cwd;
 
+	cwd = NULL;
 	cwd = getcwd(NULL, 0);
+	if (!cwd)
+	{
+		perror("minishell: pwd");
+		return (1);
+	}
 	printf("%s\n", cwd);
 	free(cwd);
+	return (0);
 }
 
 int	ft_cd(t_command *cmd)
 {
-	char	*cwd;
 	char	*oldpwd;
 
-	if (cmd->argc > 2)
-		write(2, "minishell: cd: too many arguments\n", 34);
-	else if (cmd->argc == 2)
+	if (cmd->argc < 2)
+		return (0);
+	if (cmd->argc == 2)
 	{
-		cwd = getcwd(NULL, 0);
-		oldpwd = ft_strjoin("OLDPWD=", cwd);
-		free(cwd);
+		oldpwd = getcwd(NULL, 0);
 		if (!oldpwd)
-			return (1);
-		if (chdir(cmd->argv[1]))
-		{
+			write(2, "minishell: cd: getcwd failed\n", 29);
+		else
+		{		
+			if (!ft_strprepend(&oldpwd, "OLDPWD="))
+				write(2, "minishell: cd: ft_strprepend failed\n", 36);
+			else if (chdir(cmd->argv[1]))
+				perror("minishell: cd");
+			else if (ft_update_pwd(cmd, oldpwd))
+				return (0);
 			free(oldpwd);
-			perror("minishell: cd");
-			return (-1);
-		}
-		if (ft_update_pwd(cmd, &oldpwd))
-		{
-			return (1);
 		}
 	}
-	return (0);
+	if (cmd->argc > 2)
+		write(2, "minishell: cd: too many arguments\n", 34);
+	return (1);
 }
 
 int	ft_builtin(t_command *cmd, t_command_table *table)
 {
+	int	result;
+
+	result = 0;
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "env", 4))
 		ft_env(*cmd->envp, 0);
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "export", 7))
-		ft_export(cmd);
+		result = ft_export(cmd);
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "unset", 6))
-		ft_unset(&*cmd);
+		result = ft_unset(&*cmd);
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "pwd", 4))
-		ft_pwd();
+		result = ft_pwd();
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "cd", 3))
-		ft_cd(cmd);
+		result = ft_cd(cmd);
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "echo", 5))
-		ft_echo(cmd);
+		result = ft_echo(cmd);
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "exit", 5))
-		return (ft_exit(table));
-	return (0);
+		result = ft_exit(table);
+	return (result);
 }

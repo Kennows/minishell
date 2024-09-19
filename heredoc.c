@@ -105,7 +105,7 @@ int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 		quoted = 0;
 	else
 	{
-		*delim = ft_handle_quotes(&**delim, 0);
+		*delim = ft_handle_heredoc_quotes(&**delim, 0);
 		if (!*delim)
 			return (0);
 	}

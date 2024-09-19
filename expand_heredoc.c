@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/06 11:33:39 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/06 11:33:53 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/18 19:57:39 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,20 +28,22 @@ char	*ft_replace_var_heredoc(char *str, int start, int end, char **envp)
 		str = ft_str_replace(str, env, start, end);
 		if (!str)
 			return (NULL);
-		end = (start + ft_strlen(env));
-		free(env);
+		end = start;
+		if (env)
+		{
+			end += ft_strlen(env);
+			free(env);
+		}
 	}
-	if (str[end] != '\0')
-	{
-		new = ft_handle_env_heredoc(str, end, envp);
-		return (new);
-	}
-	return (str);
+	if (str[end] == '\0')
+		return (str);
+	new = ft_handle_env_heredoc(str, end, envp);
+	return (new);
 }
 
 char	*ft_handle_env_heredoc(char *str, int start, char **envp)
 {
-	int	end;
+	int		end;
 	char	*new;
 
 	new = ft_strdup(str);

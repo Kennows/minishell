@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/10 14:56:25 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/10 14:56:41 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/18 19:40:09 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,8 @@ int	ft_envlen(char *env)
 char	**ft_envpdup(char **envp)
 {
 	char	**dup;
-	int	i;
-	int	i2;
+	int		i;
+	int		i2;
 
 	i = -1;
 	i2 = 0;
@@ -54,11 +54,11 @@ char	**ft_envpdup(char **envp)
 		if (ft_strchr(envp[i], '='))
 		{
 			if (ft_envlen(envp[i]) == 1 && envp[i][0] == '_')
-				continue;
+				continue ;
 			dup[i2] = ft_strdup(envp[i]);
 			if (!dup[i2++])
 			{
-					ft_free_array(dup);
+				ft_free_array(dup);
 				return (NULL);
 			}
 		}
@@ -73,10 +73,10 @@ int	ft_envcmp(char *env, char *new)
 
 	i = 0;
 	while (env[i] && env[i] != '=' && env[i] == new[i])
-			i++;
+		i++;
 	if ((env[i] == '\0' && new[i] == '=') || (env[i] == new[i]) \
-			|| (env[i] == '=' && new[i] == '\0'))
-			return (0);
+		|| (env[i] == '=' && new[i] == '\0'))
+		return (0);
 	else
 		return (env[i] - new[i]);
 }
@@ -97,13 +97,13 @@ int	ft_replace_env_value(char ***envp, char *new)
 			while (envp[0][++i])
 				free(envp[0][i]);
 			ft_free_array(envp[0]);
+			write(2, "malloc failed while replacing env value\n", 40);
 			return (1);
 		}
 	}
 	else
 	{
-		envp[0] = ft_array_append(&*envp[0], new);
-		if (!envp[0])
+		if (!ft_array_append(&envp[0], new))
 			return (1);
 	}
 	return (0);

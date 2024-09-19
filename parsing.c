@@ -6,13 +6,13 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 17:15:17 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/29 14:21:45 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/18 19:41:06 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-t_command	*ft_parse_redirections(t_command *cmd, t_command_table *table)
+int	ft_parse_redirections(t_command *cmd, t_command_table *table)
 {
 	t_lex	*current_token;
 
@@ -24,61 +24,35 @@ t_command	*ft_parse_redirections(t_command *cmd, t_command_table *table)
 			current_token->type == BUILT_IN)
 			current_token = current_token->next;
 		else if (!ft_handle_redir(cmd, &current_token, table))
-		{
-		//	ft_free_all(current_token, cmd, table);
-			return (NULL);
-		}
+			return (0);
 	}
-	if (!ft_init_argv(cmd, table))
-		return (NULL);
+	cmd->argc = 0;
+	cmd->argv = NULL;
 	if (cmd->next != NULL)
-	{
-		cmd->next = ft_parse_redirections(cmd->next, table);
-		if (!cmd->next)
-			return (NULL);
-	}
-	return (cmd);
-}
-
-t_command	*ft_parse_cmd_and_args(t_command *cmd)
-{
-	int		i;
-
-	i = -1;
-	while (++i < cmd->argc && cmd->token_start)
-	{
-		cmd->argv[i] = ft_expand(cmd->token_start->str, *cmd->envp);
-		if (!cmd->argv[i])
-			return (NULL);
-		cmd->token_start = ft_remove_token(cmd->token_start);
-	}
-	ft_command_type(cmd);
-	if (cmd->next == NULL)
-		return (cmd);
-	cmd->next = ft_parse_cmd_and_args(cmd->next);
-	if (!cmd->next)
-		return (NULL);
-	return (cmd);
+		if (!ft_parse_redirections(cmd->next, table))
+			return (0);
+	return (1);
 }
 
 t_command	*ft_parse_pipes(t_command_table *table, t_command *head, \
-		t_lex *tokens, t_command *prev)
+		t_lex **tokens, t_command *prev)
 {
 	head = malloc(sizeof(t_command));
 	if (!head)
 	{
 		write(2, "malloc failed while parsing pipes\n", 34);
-		ft_free_tokens(&tokens);
+		ft_free_tokens(&*tokens);
 		return (NULL);
 	}
 	ft_init_command(head, table);
-	if (!ft_pipe_syntax_check(&tokens, &head))
+	if (!ft_pipe_syntax_check(&*tokens, &head))
 		return (NULL);
 	head->prev = prev;
-	if (tokens->next != NULL)
+	if ((*tokens)->next != NULL && (*tokens)->next->type == PIPE)
 	{
-		ft_remove_token(tokens->next);
-		head->next = ft_parse_pipes(table, head->next, tokens->next, \
+		*tokens = (*tokens)->next;
+		*tokens = ft_remove_token(&*tokens, head);
+		head->next = ft_parse_pipes(table, head->next, &*tokens, \
 				head);
 		if (!head->next)
 		{
@@ -101,52 +75,39 @@ t_command_table	*ft_create_cmd_table(t_command_table *table, char **envp)
 		write(2, "malloc failed while creating command table\n", 43);
 		return (NULL);
 	}
-	table->commands = NULL;
-	table->files = NULL;
-	table->envp = NULL;
-	shell = ft_strjoin("SHELL=", getenv("PWD"));
-	if (shell)
-		shell = ft_strcombine(shell, "/minishell");
-	if (!shell)
+	ft_init_table(table);
+	shell = getcwd(NULL, 0);
+	if (!shell || !ft_strprepend(&shell, "SHELL=") || \
+		!ft_strcombine(&shell, "/minishell"))
+		write(2, "error creating SHELL env while creating cmd table\n", 50);
+	else
 	{
-		free(table);
-		return (NULL);
-	}
-	table->envp = ft_create_envp(&*table->envp, envp, &*shell);
+		table->envp = ft_create_envp(&*table->envp, envp, &*shell);
+		if (table->envp)
+			return (table);
+		write(2, "error creating envp while creating command table\n", 49);
+	}	
+	free(table);
 	free(shell);
-	if (!table->envp)
-	{
-		write(2, "error creating envp\n", 20);
-		free(table);
-		return (NULL);
-	}
-	return (table);
+	return (NULL);
 }
 
-int	ft_add_commands(t_command_table **table, t_lex *tokens)
+int	ft_add_commands(t_command_table **table, t_lex **tokens)
 {
 	t_command		*command;
 
 	command = NULL;
-	(*table)->commands = ft_parse_pipes(*table, command, tokens, NULL);
+	(*table)->commands = ft_parse_pipes(*table, command, &*tokens, NULL);
 	if (!(*table)->commands)
 		return (0);
-	puts("pipes handled");
 	command = (*table)->commands;
-	command->envp = &(*table)->envp;
-	command = ft_parse_redirections(command, *table);
-	if (!command)
+	if (!ft_parse_redirections(command, *table))
 		return (0);
-	puts("redirections handled");
-	command = ft_parse_cmd_and_args(command);
-	if (!command)
+	if (!ft_parse_cmds_and_args(command))
 	{
-		command = (*table)->commands;
-		write(2, "malloc failed while parsing cmds and args\n", 42);
-		ft_free_all(command->token_start, command, *table);
+		write(2, "error parsing commands and arguments\n", 37);
+		ft_free_all((*table)->commands->token_start, command, *table);
 		return (0);
 	}
-	puts("cmds handled");
-	puts("");
 	return (1);
 }
