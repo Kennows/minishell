@@ -1,4 +1,6 @@
-CFILES = main.c lexing.c parsing.c redirections.c ft_token_split.c utils.c utils2.c utils3.c freeing_functions.c init.c heredoc.c syntax.c expand.c expand_heredoc.c quotes.c builtins.c builtins2.c ft_env.c env_utils.c ft_word_split.c heredoc_quotes.c
+CFILES = main.c lexing.c parsing.c redirections.c ft_token_split.c array_utils.c utils.c utils2.c utils3.c \
+		freeing_functions.c init.c heredoc.c syntax.c expand.c expand_heredoc.c quotes.c builtins.c \
+		builtins2.c ft_env.c env_utils.c env_utils2.c ft_word_split.c heredoc_quotes.c signals.c
 
 LIBSRC = libft/ft_isalpha.c libft/ft_isdigit.c libft/ft_isalnum.c libft/ft_isascii.c libft/ft_isprint.c \
 		 libft/ft_strlen.c libft/ft_memset.c libft/ft_bzero.c libft/ft_memcpy.c libft/ft_memmove.c \

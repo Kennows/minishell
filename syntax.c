@@ -38,32 +38,21 @@ int	ft_pipe_syntax_check(t_lex **tokens, t_command **cmd)
 	return (1);
 }
 
-int	ft_print_redir_env_error(char *str)
-{
-	int	i;
-
-	i = ft_find_env_start(str, 0);
-	write(2, "minishell: ", 11);
-	while (str[i])
-		write(2, &str[i++], 1);
-	write(2, ": ambiguous redirect\n", 21);
-	return (1);
-}
-
 int	ft_redir_syntax_check(t_lex **token, t_command **cmd, \
 				t_command_table **table)
 {
 	if ((*token)->next == NULL || (*token)->next->type != WORD || \
 		(*cmd)->token_end->index <= (*token)->index)
 	{
+		write(2, "minishell: ", 11);
 		if ((*token)->type == REDIR_IN)
-			write(2, "minishell: syntax error near unexpected token `<'\n", 50);
+			 write(2, "syntax error near unexpected token `<'\n", 39);
 		else if ((*token)->type == REDIR_OUT)
-			write(2, "minishell: syntax error near unexpected token `>'\n", 50);
+			write(2, "syntax error near unexpected token `>'\n", 39);
 		else if ((*token)->type == APPEND)
-			write(2, "minishell: syntax error near unexpected token `>>'\n", 51);
+			write(2, "syntax error near unexpected token `>>'\n", 40);
 		else if ((*token)->type == HERE_DOC)
-			write(2, "minishell: syntax error near unexpected token `<<'\n", 51);
+			write(2, "syntax error near unexpected token `<<'\n", 40);
 		ft_free_all(*token, *cmd, *table);
 		return (0);
 	}

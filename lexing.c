@@ -12,6 +12,35 @@
 
 #include "minishell.h"
 
+t_lex	*ft_remove_token(t_lex **token, t_command *cmd)
+{
+	t_lex	*prev;
+	t_lex	*next;
+	t_lex	*current;
+
+	if (*token != NULL)
+	{
+		prev = (*token)->prev;
+		next = (*token)->next;
+		if (prev != NULL)
+			prev->next = next;
+		if (next != NULL)
+			next->prev = prev;
+		current = (*token);
+		while (current->next != NULL && current->next->index-- > 0)
+			current = current->next;
+		ft_remove_subtoken((*token)->subtoken);
+		if ((*token)->str != NULL)
+			free((*token)->str);
+		if (cmd->token_end != NULL && *token == cmd->token_end)
+			cmd->token_end = NULL;
+		free(*token);
+		*token = next;
+		return (*token);
+	}
+	return (NULL);
+}
+
 void	ft_token_type(t_lex *token)
 {
 	if (!ft_strncmp(token->str, "<", 2))

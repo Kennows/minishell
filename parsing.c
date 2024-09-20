@@ -12,6 +12,35 @@
 
 #include "minishell.h"
 
+int	ft_parse_cmds_and_args(t_command *cmd, t_command_table *table)
+{
+	t_lex		**token;
+
+	while (cmd != NULL)
+	{
+		token = &cmd->token_start;
+		while (*token != NULL && cmd->token_end != NULL && \
+				(*token)->index <= cmd->token_end->index)
+		{
+			if (!ft_handle_quotes((*token)->str, *token, 0))
+				return (0);
+			if (!ft_handle_env(*token, cmd, table))
+			{
+				write(2, "error handling envs\n", 20);
+				return (0);
+			}
+			*token = ft_remove_token(&*token, cmd);
+			if (cmd->argv && cmd->argv[cmd->argc])
+				cmd->argc++;
+		}
+		ft_command_type(cmd);
+		if (cmd->next == NULL)
+			return (1);
+		cmd = cmd->next;
+	}
+	return (1);
+}
+
 int	ft_parse_redirections(t_command *cmd, t_command_table *table)
 {
 	t_lex	*current_token;
@@ -52,8 +81,7 @@ t_command	*ft_parse_pipes(t_command_table *table, t_command *head, \
 	{
 		*tokens = (*tokens)->next;
 		*tokens = ft_remove_token(&*tokens, head);
-		head->next = ft_parse_pipes(table, head->next, &*tokens, \
-				head);
+		head->next = ft_parse_pipes(table, head->next, &*tokens, head);
 		if (!head->next)
 		{
 			free(head);
@@ -63,6 +91,30 @@ t_command	*ft_parse_pipes(t_command_table *table, t_command *head, \
 		head->next->pipe_in = head;
 	}
 	return (head);
+}
+
+int	ft_add_commands(t_command_table **table, t_lex **tokens)
+{
+	t_command		*command;
+
+	command = NULL;
+	(*table)->commands = ft_parse_pipes(*table, command, &*tokens, NULL);
+	if (!(*table)->commands)
+		return (0);
+	command = (*table)->commands;
+	if (!ft_parse_redirections(command, *table))
+	{
+		printf("(%d)", (*table)->exit_status);
+		return (0);
+	}
+	if (!ft_parse_cmds_and_args(command, *table))
+	{
+		write(2, "error parsing commands and arguments\n", 37);
+		ft_free_all((*table)->commands->token_start, command, *table);
+		return (0);
+	}
+	(*table)->exit_status = 0;
+	return (1);
 }
 
 t_command_table	*ft_create_cmd_table(t_command_table *table, char **envp)
@@ -90,24 +142,4 @@ t_command_table	*ft_create_cmd_table(t_command_table *table, char **envp)
 	free(table);
 	free(shell);
 	return (NULL);
-}
-
-int	ft_add_commands(t_command_table **table, t_lex **tokens)
-{
-	t_command		*command;
-
-	command = NULL;
-	(*table)->commands = ft_parse_pipes(*table, command, &*tokens, NULL);
-	if (!(*table)->commands)
-		return (0);
-	command = (*table)->commands;
-	if (!ft_parse_redirections(command, *table))
-		return (0);
-	if (!ft_parse_cmds_and_args(command))
-	{
-		write(2, "error parsing commands and arguments\n", 37);
-		ft_free_all((*table)->commands->token_start, command, *table);
-		return (0);
-	}
-	return (1);
 }

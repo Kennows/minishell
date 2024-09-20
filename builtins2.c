@@ -20,7 +20,8 @@ int	ft_echo(t_command *cmd)
 
 	i = 0;
 	nl = 1;
-	while (cmd->argc > 1 && !ft_strncmp(cmd->argv[++i], "-n", 2))
+	while (cmd->argc > 1 && cmd->argv[++i] && \
+			!ft_strncmp(cmd->argv[i], "-n", 2))
 	{
 		i2 = 1;
 		while (cmd->argv[i][i2] == 'n')
@@ -32,7 +33,7 @@ int	ft_echo(t_command *cmd)
 	while (cmd->argv[i] && i > 0)
 	{
 		printf("%s", cmd->argv[i++]);
-		if (cmd->argv[i])
+		if (cmd->argv[i] != NULL)
 			printf(" ");
 	}
 	if (nl)

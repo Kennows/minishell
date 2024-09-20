@@ -12,6 +12,8 @@
 
 #include "minishell.h"
 
+extern int	g_sig;
+
 char	*ft_heredoc_name(void)
 {
 	static int	i = 1;
@@ -37,50 +39,22 @@ char	*ft_heredoc_name(void)
 	return (ret);
 }
 
-char	*ft_strappend(char *dest, char *src)
-{
-	char	*new;
-	int		i;
-
-	if (!src)
-		return (dest);
-	if (dest == NULL)
-	{
-		dest = ft_strdup(src);
-		return (dest);
-	}
-	new = malloc(sizeof(char) * (ft_strlen(dest) + ft_strlen(src) + 2));
-	if (!new)
-	{
-		free(dest);
-		return (NULL);
-	}
-	i = ft_strlen(dest);
-	ft_strlcpy(new, dest, i + 1);
-	new[i++] = '\n';
-	while (*src != '\0')
-		new[i++] = *src++;
-	new[i] = '\0';
-	free(dest);
-	return (new);
-}
-
 int	ft_readline_heredoc(char **str, char *delimiter, int quoted, \
 		t_command_table *table)
 {
 	char	*buf;
 
+	g_sig = 0;
+	ft_set_heredoc_sig_handler();
 	while (1)
 	{
+		if (g_sig == SIGINT)
+			return (130);
 		buf = readline(">");
-		if (ft_strncmp(buf, delimiter, ft_strlen(delimiter) + 1))
+		if (buf && ft_strncmp(buf, delimiter, ft_strlen(delimiter) + 1))
 		{
-			if (!quoted)
-			{
-				buf = ft_handle_env_heredoc(buf, 0, table->envp);
-				if (!buf)
-					return (0);
-			}
+			if (!quoted && !ft_handle_env_heredoc(&buf, 0, table))
+				return (0);
 			*str = ft_strappend(*str, buf);
 			free(buf);
 			if (!*str)
@@ -88,7 +62,10 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted, \
 		}
 		else
 		{
-			free(buf);
+			if (buf)
+				free(buf);
+			else
+				ft_print_heredoc_warning(delimiter);
 			return (1);
 		}
 	}
@@ -98,6 +75,7 @@ int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 {
 	char	*str;
 	int		quoted;
+	int		exit_status;
 
 	quoted = 1;
 	str = NULL;
@@ -109,8 +87,11 @@ int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 		if (!*delim)
 			return (0);
 	}
-	if (!ft_readline_heredoc(&str, *delim, quoted, table))
+	exit_status = ft_readline_heredoc(&str, *delim, quoted, table);
+	if (!exit_status)
 		return (0);
+	if (exit_status == 130)
+		table->exit_status = 130;
 	if (str)
 	{
 		write(fd, str, ft_strlen(str));
@@ -136,5 +117,34 @@ int	ft_create_heredoc(char **delim, char *filename, t_command_table *table)
 		return (0);
 	}
 	close(fd);
+	return (1);
+}
+
+int	ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table)
+{
+	t_file		*temp;
+	char		*name;
+
+	temp = NULL;
+	name = ft_heredoc_name();
+	if (!name)
+	{
+		write(2, "malloc failed while creating heredoc\n", 37);
+		return (0);
+	}
+	temp = ft_new_heredoc_file(&temp, &name, table);
+	if (!temp)
+		return (0);
+	if (!ft_create_heredoc(&(*token)->next->str, name, table))
+	{
+		free(name);
+		free(temp->name);
+		free(temp);
+		return (0);
+	}
+	cmd->redir_in_file = temp;
+	ft_add_file_to_list(table, temp);
+	*token = ft_remove_redirection(cmd, &*token);
+	free(name);
 	return (1);
 }

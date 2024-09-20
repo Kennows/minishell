@@ -48,7 +48,7 @@ t_file	*ft_new_file(t_file *file, t_lex *token, t_token_type type, \
 		ft_free_all(table->commands->token_start, table->commands, table);
 		return (NULL);
 	}
-	file->name = ft_expand_file_name(token->str, token, table->envp);
+	file->name = ft_expand_file_name(token->str, token, table);
 	if (!file->name || file->name[0] == '\0')
 	{
 		if (file->name)
@@ -123,7 +123,7 @@ int	ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table)
 		return (0);
 	if ((*token)->type == HERE_DOC)
 	{
-		if (!ft_parse_heredoc(cmd, token, table))
+		if (!ft_parse_heredoc(cmd, token, table) || table->exit_status)
 			return (0);
 		else
 			return (1);
@@ -137,34 +137,5 @@ int	ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table)
 		cmd->redir_out_file = temp;
 	ft_add_file_to_list(table, temp);
 	*token = ft_remove_redirection(cmd, &*token);
-	return (1);
-}
-
-int	ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table)
-{
-	t_file		*temp;
-	char		*name;
-
-	temp = NULL;
-	name = ft_heredoc_name();
-	if (!name)
-	{
-		write(2, "malloc failed while creating heredoc\n", 37);
-		return (0);
-	}
-	temp = ft_new_heredoc_file(&temp, &name, table);
-	if (!temp)
-		return (0);
-	if (!ft_create_heredoc(&(*token)->next->str, name, table))
-	{
-		free(name);
-		free(temp->name);
-		free(temp);
-		return (0);
-	}
-	cmd->redir_in_file = temp;
-	ft_add_file_to_list(table, temp);
-	*token = ft_remove_redirection(cmd, &*token);
-	free(name);
 	return (1);
 }

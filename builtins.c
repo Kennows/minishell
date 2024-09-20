@@ -115,7 +115,11 @@ int	ft_builtin(t_command *cmd, t_command_table *table)
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "export", 7))
 		result = ft_export(cmd);
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "unset", 6))
+	{
 		result = ft_unset(&*cmd);
+		if (result)
+			write(2, "minishell: unset: error\n", 24);
+	}
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "pwd", 4))
 		result = ft_pwd();
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "cd", 3))

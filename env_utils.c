@@ -28,6 +28,34 @@ char	*ft_getenv(char *str, char **envp)
 	return (NULL);
 }
 
+int	ft_getnenv(char *str, char **env, int n, t_command_table *table)
+{
+	char	*temp;
+
+	temp = NULL;
+	if (*str == '?')
+		*env = ft_itoa(table->exit_status);
+	else
+	{
+		temp = malloc(sizeof(char) * n);
+		if (!temp)
+			return (0);
+		ft_strlcpy(temp, str, n);
+		if (ft_getenv(temp, table->envp))
+			*env = ft_strdup(ft_getenv(temp, table->envp));
+	}
+	if (!*env)
+	{
+		write(2, "error getting a value for expansion\n", 36);
+		if (temp)
+			free(temp);
+		return (0);	
+	}
+	if (temp)
+		free(temp);
+	return (1);
+}
+
 int	ft_envlen(char *env)
 {
 	int	i;
@@ -79,32 +107,4 @@ int	ft_envcmp(char *env, char *new)
 		return (0);
 	else
 		return (env[i] - new[i]);
-}
-
-int	ft_replace_env_value(char ***envp, char *new)
-{
-	int	i;
-
-	i = 0;
-	while (envp[0][i] && ft_envcmp(envp[0][i], new))
-		i++;
-	if (envp[0][i])
-	{
-		free(envp[0][i]);
-		envp[0][i] = ft_strdup(new);
-		if (!envp[0][i])
-		{
-			while (envp[0][++i])
-				free(envp[0][i]);
-			ft_free_array(envp[0]);
-			write(2, "malloc failed while replacing env value\n", 40);
-			return (1);
-		}
-	}
-	else
-	{
-		if (!ft_array_append(&envp[0], new))
-			return (1);
-	}
-	return (0);
 }

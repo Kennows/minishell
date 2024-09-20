@@ -12,35 +12,25 @@
 
 #include "minishell.h"
 
-int	ft_strprepend(char **str, char *prefix)
+void	ft_print_redir_env_error(char *str)
 {
-	int		i;
-	int		i2;
-	char	*new;
+	int	i;
 
-	i = -1;
-	i2 = 0;
-	new = malloc(sizeof(char) * (ft_strlen(*str) + ft_strlen(prefix) + 1));
-	if (!new)
-		return (0);
-	while (prefix[++i] != '\0')
-		new[i] = prefix[i];
-	while (str[0][i2] != '\0')
-		new[i++] = str[0][i2++];
-	new[i] = '\0';
-	free(str[0]);
-	str[0] = new;
-	return (1);
+	i = ft_find_env_start(str, 0);
+	write(2, "minishell: ", 11);
+	while (str[i])
+		write(2, &str[i++], 1);
+	write(2, ": ambiguous redirect\n", 21);
 }
 
-int	ft_strchr_index(const char *s, int c)
+void	ft_print_heredoc_warning(char *delimiter)
 {
 	int	i;
 
 	i = 0;
-	while (s[i] != (char)c && s[i] != '\0')
-		i++;
-	if (s[i] == (char)c)
-		return (i);
-	return (-1);
+	write(2, "minishell: warning: here-document delimited by end-of-file ", 59);
+	write(2, "(wanted `", 9);
+	while (delimiter[i])
+		write(2, &delimiter[i++], 1);
+	write(2, "')\n", 3);
 }

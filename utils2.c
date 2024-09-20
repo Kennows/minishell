@@ -5,81 +5,113 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/29 15:18:29 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/18 19:46:39 by nvallin          ###   ########.fr       */
+/*   Created: 2024/09/18 19:51:09 by nvallin           #+#    #+#             */
+/*   Updated: 2024/09/18 19:51:50 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	ft_is_whitespace(char c)
-{
-	if (c == ' ' || c == '\t' || c == '\n'
-		|| c == '\v' || c == '\f' || c == '\r')
-		return (1);
-	return (0);
-}
-
-int	ft_arrlen(char **arr)
-{
-	int	len;
-
-	len = 0;
-	while (arr && arr[len] != NULL)
-		len++;
-	return (len);
-}
-
-int	ft_strcombine(char **dest, char *src)
+int	ft_strprepend(char **str, char *prefix)
 {
 	int		i;
 	int		i2;
 	char	*new;
 
-	if (src == NULL || *dest == NULL)
-		return (0);
-	i = ft_strlen(*dest);
-	i2 = ft_strlen(src);
-	new = malloc((sizeof(char) * (i + i2 + 1)));
+	i = -1;
+	i2 = 0;
+	new = malloc(sizeof(char) * (ft_strlen(*str) + ft_strlen(prefix) + 1));
 	if (!new)
 		return (0);
-	ft_strlcpy(new, *dest, i + 1);
-	i2 = 0;
-	while (src[i2] != '\0')
-		new[i++] = src[i2++];
+	while (prefix[++i] != '\0')
+		new[i] = prefix[i];
+	while (str[0][i2] != '\0')
+		new[i++] = str[0][i2++];
 	new[i] = '\0';
-	free(*dest);
-	*dest = new;
+	free(str[0]);
+	str[0] = new;
 	return (1);
 }
 
-int	ft_find_quote_end_index(const char *s, char q, int start)
+char	*ft_strappend(char *dest, char *src)
 {
-	while (s[start] != q && s[start] != '\0')
-		start++;
-	if (s[start] == q)
+	char	*new;
+	int		i;
+
+	if (!src)
+		return (dest);
+	if (dest == NULL)
 	{
-		start++;
-		while (s[start] != q && s[start] != '\0')
-			start++;
+		dest = ft_strdup(src);
+		return (dest);
 	}
-	return (start);
+	new = malloc(sizeof(char) * (ft_strlen(dest) + ft_strlen(src) + 2));
+	if (!new)
+	{
+		free(dest);
+		return (NULL);
+	}
+	i = ft_strlen(dest);
+	ft_strlcpy(new, dest, i + 1);
+	new[i++] = '\n';
+	while (*src != '\0')
+		new[i++] = *src++;
+	new[i] = '\0';
+	free(dest);
+	return (new);
 }
 
-char	*ft_strldup(const char *s1, size_t len)
+char	*ft_str_replace(char *str, char *substitute, int start, int end)
 {
-	size_t	i;
-	char	*dup;
+	char	*new;
+
+	if (substitute)
+		new = malloc(sizeof(char) * ((ft_strlen(str) + ft_strlen(substitute)) \
+									- (end - start) + 1));
+	else
+		new = malloc(sizeof(char) * (ft_strlen(str) - (end - start) + 1));
+	if (!new)
+	{
+		free(str);
+		if (substitute)
+			free(substitute);
+		write(2, "malloc failed while expanding env\n", 34);
+		return (NULL);
+	}
+	ft_strlcpy(new, str, start + 1);
+	while (substitute && *substitute)
+		new[start++] = *(substitute++);
+	while (str[end])
+		new[start++] = str[end++];
+	new[start] = '\0';
+	free(str);
+	return (new);
+}
+int	ft_strchr_index(const char *s, int c)
+{
+	int	i;
 
 	i = 0;
-	dup = malloc(len + 1 * sizeof(char));
-	if (!dup)
-		return (NULL);
-	while (i < len && s1[i] != '\0')
-	{
-		dup[i] = s1[i];
+	while (s[i] != (char)c && s[i] != '\0')
 		i++;
+	if (s[i] == (char)c)
+		return (i);
+	return (-1);
+}
+
+void	ft_command_type(t_command *cmd)
+{
+	if (cmd->argv && cmd->argv[0])
+	{
+		if (!ft_strncmp(cmd->argv[0], "echo", 5) || \
+			!ft_strncmp(cmd->argv[0], "cd", 3) || \
+			!ft_strncmp(cmd->argv[0], "pwd", 4) || \
+			!ft_strncmp(cmd->argv[0], "export", 7) || \
+			!ft_strncmp(cmd->argv[0], "unset", 6) || \
+			!ft_strncmp(cmd->argv[0], "env", 4) || \
+			!ft_strncmp(cmd->argv[0], "exit", 5))
+			cmd->type = BUILT_IN;
+		else
+			cmd->type = WORD;
 	}
-	dup[i] = '\0';
-	return (dup);
 }

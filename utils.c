@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/26 11:50:07 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/07 20:26:26 by nvallin          ###   ########.fr       */
+/*   Created: 2024/08/29 15:18:29 by nvallin           #+#    #+#             */
+/*   Updated: 2024/09/18 19:46:39 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,124 +27,64 @@ int	ft_isnumber(const char *str)
 	return (1);
 }
 
-char	**ft_array_cpynfree(char **dest, char **src, char *ignore)
+int	ft_is_whitespace(char c)
 {
-	int	i;
-	int	i2;
-
-	i = -1;
-	i2 = 0;
-	while (src && src[++i] != NULL)
-	{
-		if (ignore != NULL && !ft_strncmp(ignore, src[i], ft_strlen(ignore)) \
-			&& (src[i][ft_strlen(ignore)] == '=' \
-			|| src[i][ft_strlen(ignore)] == '\0'))
-			i++;
-		if (src[i] == NULL)
-			break ;
-		dest[i2] = ft_strdup(src[i]);
-		if (!dest[i2++])
-		{
-			write(2, "malloc failed while copying an array\n", 37);
-			ft_free_array(dest);
-			ft_free_array(src);
-			return (NULL);
-		}
-	}
-	dest[i2] = NULL;
-	ft_free_array(src);
-	return (dest);
+	if (c == ' ' || c == '\t' || c == '\n'
+		|| c == '\v' || c == '\f' || c == '\r')
+		return (1);
+	return (0);
 }
 
-int	ft_append_empty_arr(char ***arr, char *str)
-{
-	arr[0] = malloc(sizeof(char *) * 2);
-	if (!arr[0])
-	{
-		write(2, "malloc failed while appending to an empty array\n", 48);
-		return (0);
-	}
-	arr[0][0] = ft_strdup(str);
-	if (!arr[0][0])
-	{
-		free(arr[0]);
-		arr[0] = NULL;
-		write(2, "malloc failed while appending to an empty array\n", 48);
-		return (0);
-	}
-	arr[0][1] = NULL;
-	return (1);
-}
-
-int	ft_array_append(char ***array, char *str)
+int	ft_strcombine(char **dest, char *src)
 {
 	int		i;
-	char	**new;
+	int		i2;
+	char	*new;
 
-	if (*array == NULL && ft_append_empty_arr(&*array, str))
-		return (1);
-	else if (*array == NULL)
+	if (src == NULL || *dest == NULL)
 		return (0);
-	i = ft_arrlen(*array);
-	new = malloc((i + 2) * sizeof(char *));
-	if (!new)
-		write(2, "malloc failed while appending to an array\n", 42);
-	else
-		new = ft_array_cpynfree(new, *array, NULL);
+	i = ft_strlen(*dest);
+	i2 = ft_strlen(src);
+	new = malloc((sizeof(char) * (i + i2 + 1)));
 	if (!new)
 		return (0);
-	new[i] = ft_strdup(str);
-	if (!new[i])
-	{
-		write(2, "malloc failed while appending to an array\n", 42);
-		ft_free_array(new);
-		return (0);
-	}
-	new[++i] = NULL;
-	*array = new;
+	ft_strlcpy(new, *dest, i + 1);
+	i2 = 0;
+	while (src[i2] != '\0')
+		new[i++] = src[i2++];
+	new[i] = '\0';
+	free(*dest);
+	*dest = new;
 	return (1);
 }
 
-char	*ft_str_replace(char *str, char *substitute, int start, int end)
+int	ft_find_quote_end_index(const char *s, char q, int start)
 {
-	char	*new;
-
-	if (substitute)
-		new = malloc(sizeof(char) * ((ft_strlen(str) + ft_strlen(substitute) \
-									- (end - start) + 1)));
-	else
-		new = malloc(sizeof(char) * (ft_strlen(str) - (end - start) + 1));
-	if (!new)
+	while (s[start] != q && s[start] != '\0')
+		start++;
+	if (s[start] == q)
 	{
-		free(str);
-		if (substitute)
-			free(substitute);
-		write(2, "malloc failed while expanding env\n", 34);
-		return (NULL);
+		start++;
+		while (s[start] != q && s[start] != '\0')
+			start++;
 	}
-	ft_strlcpy(new, str, start + 1);
-	while (substitute && *substitute)
-		new[start++] = *(substitute++);
-	while (str[end])
-		new[start++] = str[end++];
-	new[start] = '\0';
-	free(str);
-	return (new);
+	return (start);
 }
 
-void	ft_command_type(t_command *cmd)
+char	*ft_strldup(const char *s1, size_t len)
 {
-	if (cmd->argv && cmd->argv[0])
+	size_t	i;
+	char	*dup;
+
+	i = 0;
+	dup = malloc(len + 1 * sizeof(char));
+	if (!dup)
+		return (NULL);
+	while (i < len && s1[i] != '\0')
 	{
-		if (!ft_strncmp(cmd->argv[0], "echo", 5) || \
-			!ft_strncmp(cmd->argv[0], "cd", 3) || \
-			!ft_strncmp(cmd->argv[0], "pwd", 4) || \
-			!ft_strncmp(cmd->argv[0], "export", 7) || \
-			!ft_strncmp(cmd->argv[0], "unset", 6) || \
-			!ft_strncmp(cmd->argv[0], "env", 4) || \
-			!ft_strncmp(cmd->argv[0], "exit", 5))
-			cmd->type = BUILT_IN;
-		else
-			cmd->type = WORD;
+		dup[i] = s1[i];
+		i++;
 	}
+	dup[i] = '\0';
+	return (dup);
 }
