@@ -95,7 +95,7 @@ int	ft_cd(t_command *cmd)
 				write(2, "minishell: cd: ft_strprepend failed\n", 36);
 			else if (chdir(cmd->argv[1]))
 				perror("minishell: cd");
-			else if (ft_update_pwd(cmd, oldpwd))
+			else if (!ft_update_pwd(cmd, oldpwd))
 				return (0);
 			free(oldpwd);
 		}

@@ -28,12 +28,40 @@ int	ft_execute(t_command_table *table)
 	return (0);
 }
 
+void	ft_minishell(t_command_table *table)
+{
+	t_lex	*tokens;
+	char	*cmd;
+
+	while (1)
+	{
+		ft_set_sig_handler();		
+		if (table->exit_status)
+			printf("(%d)", table->exit_status);
+		cmd = readline("minishell$ ");
+		if (cmd == NULL)
+		{
+			printf("exit\n");
+			return ;		
+		}
+		add_history(cmd);
+		tokens = ft_tokenize(cmd);
+		free(cmd);
+		if (!tokens || !ft_add_commands(&table, &tokens))
+			continue ;
+		if (ft_execute(table) == -1)
+			return ;
+		ft_free_files(&table->files);
+		ft_free_commands(&table->commands);
+		table->files = NULL;
+		table->commands = NULL;
+	}	
+}
+
 int	main(int argc, char **argv, char **envp)
 {
-	t_lex			*tokens;
 	t_command_table	*table;
-	char			*cmd;
-
+	
 	if (argc != 1 || argv[1])
 	{
 		write(2, "please execute with no arguments!\n", 34);
@@ -41,38 +69,7 @@ int	main(int argc, char **argv, char **envp)
 	}
 	table = NULL;
 	table = ft_create_cmd_table(table, envp);
-	if (!table)
-		return (0);
-	while (1)
-	{
-		ft_set_sig_handler();
-		cmd = readline("minishell$ ");
-		if (cmd == NULL)
-		{
-			printf("exit\n");
-			return (0);		
-		}
-		if (!ft_strncmp(cmd, "exit", 5))
-		{
-			free(cmd);
-			if (table->envp)
-				ft_free_array(table->envp);
-			free(table);
-			rl_clear_history();
-			printf("exit\n");
-			return (0);
-		}
-		add_history(cmd);
-		tokens = ft_tokenize(cmd);
-		free(cmd);
-		if (!tokens || !ft_add_commands(&table, &tokens))
-			continue ;
-		if (ft_execute(table))
-			printf("(%d)", table->exit_status);
-		ft_free_files(&table->files);
-		ft_free_commands(&table->commands);
-		table->files = NULL;
-		table->commands = NULL;
-	}
+	if (table)
+		ft_minishell(table);
 	return (0);
 }

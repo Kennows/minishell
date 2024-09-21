@@ -49,5 +49,5 @@ int	ft_exit(t_command_table *table)
 	free(table);
 	rl_clear_history();
 	printf("exit\n");
-	return (-123);
+	return (-1);
 }

@@ -126,7 +126,8 @@ void			ft_sighandler(int signal);
 void			ft_heredoc_sighandler(int signal);
 void			ft_set_sig_handler(void);
 void			ft_set_heredoc_sig_handler(void);
-int				ft_pipe_syntax_check(t_lex **tokens, t_command **cmd);
+int				ft_pipe_syntax_check(t_lex **tokens, t_command **cmd, \
+										t_command_table *table);
 int				ft_redir_syntax_check(t_lex **token, t_command **cmd, \
 										t_command_table **table);
 int				ft_export_syntax_check(char *arg);

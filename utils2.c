@@ -87,6 +87,7 @@ char	*ft_str_replace(char *str, char *substitute, int start, int end)
 	free(str);
 	return (new);
 }
+
 int	ft_strchr_index(const char *s, int c)
 {
 	int	i;

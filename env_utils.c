@@ -42,17 +42,17 @@ int	ft_getnenv(char *str, char **env, int n, t_command_table *table)
 			return (0);
 		ft_strlcpy(temp, str, n);
 		if (ft_getenv(temp, table->envp))
+		{
 			*env = ft_strdup(ft_getenv(temp, table->envp));
-	}
-	if (!*env)
-	{
-		write(2, "error getting a value for expansion\n", 36);
-		if (temp)
-			free(temp);
-		return (0);	
-	}
-	if (temp)
+			if (!*env)
+			{
+				write(2, "ft_strdup failed in ft_getenv\n", 30);
+				free(temp);
+				return (0);	
+			}
+		}
 		free(temp);
+	}	
 	return (1);
 }
 

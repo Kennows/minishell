@@ -18,7 +18,7 @@ char	*ft_replace_var_heredoc(char *str, int start, int end, \
 	char	*env;
 
 	env = NULL;
-	if (end - start > 1)
+	if (end - start > 1 || str[end++] == '?')
 	{
 		if (!ft_getnenv(str + start + 1, &env, end - start, table))
 		{
@@ -57,9 +57,7 @@ int	ft_handle_env_heredoc(char **str, int start, t_command_table *table)
 		start++;
 	if (new[start] == '$')
 	{
-		end = start + 1;
-		while (ft_isalnum(new[end]))
-			end++;
+		end = ft_find_env_end(new, start);
 		new = ft_replace_var_heredoc(new, start, end, table);
 		if (!new)
 			write(2, "malloc failed during variable expansion\n", 40);

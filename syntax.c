@@ -12,13 +12,15 @@
 
 #include "minishell.h"
 
-int	ft_pipe_syntax_check(t_lex **tokens, t_command **cmd)
+int	ft_pipe_syntax_check(t_lex **tokens, t_command **cmd, \
+							t_command_table *table)
 {
 	if ((*tokens)->type == PIPE)
 	{
 		write(2, "minishell: syntax error near unexpected token `|'\n", 50);
 		free(*cmd);
 		ft_free_tokens(&*tokens);
+		table->exit_status = 2;
 		return (0);
 	}
 	(*cmd)->token_start = &**tokens;
@@ -32,6 +34,7 @@ int	ft_pipe_syntax_check(t_lex **tokens, t_command **cmd)
 			write(2, "minishell: syntax error near unexpected token `|'\n", 50);
 			free(*cmd);
 			ft_free_tokens(&*tokens);
+			table->exit_status = 2;
 			return (0);
 		}
 	}
@@ -54,6 +57,7 @@ int	ft_redir_syntax_check(t_lex **token, t_command **cmd, \
 		else if ((*token)->type == HERE_DOC)
 			write(2, "syntax error near unexpected token `<<'\n", 40);
 		ft_free_all(*token, *cmd, *table);
+		(*table)->exit_status = 2;
 		return (0);
 	}
 	return (1);

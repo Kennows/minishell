@@ -107,7 +107,7 @@ int	ft_array_append_array(char ***dest, char ***src, int start)
 	count = 0;
 	while (src[0][start] != NULL)
 	{
-		if (!ft_array_append(&*dest, src[0][start++]))
+		if (!ft_array_append(&dest[0], src[0][start++]))
 		{
 			ft_free_array(&**src);
 			return (0);
@@ -115,5 +115,7 @@ int	ft_array_append_array(char ***dest, char ***src, int start)
 		count++;
 	}
 	ft_free_array(&**src);
+	if (count == 0)
+		count++;
 	return (count);
 }

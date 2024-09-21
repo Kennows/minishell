@@ -74,7 +74,7 @@ t_command	*ft_parse_pipes(t_command_table *table, t_command *head, \
 		return (NULL);
 	}
 	ft_init_command(head, table);
-	if (!ft_pipe_syntax_check(&*tokens, &head))
+	if (!ft_pipe_syntax_check(&*tokens, &head, table))
 		return (NULL);
 	head->prev = prev;
 	if ((*tokens)->next != NULL && (*tokens)->next->type == PIPE)
@@ -103,17 +103,13 @@ int	ft_add_commands(t_command_table **table, t_lex **tokens)
 		return (0);
 	command = (*table)->commands;
 	if (!ft_parse_redirections(command, *table))
-	{
-		printf("(%d)", (*table)->exit_status);
 		return (0);
-	}
 	if (!ft_parse_cmds_and_args(command, *table))
 	{
 		write(2, "error parsing commands and arguments\n", 37);
 		ft_free_all((*table)->commands->token_start, command, *table);
 		return (0);
 	}
-	(*table)->exit_status = 0;
 	return (1);
 }
 
