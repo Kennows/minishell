@@ -19,6 +19,7 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 # include <fcntl.h>
+# include <sys/wait.h>
 
 typedef enum s_token_type
 {
@@ -101,5 +102,8 @@ char			**ft_array_append(char **array, char *str);
 void			ft_print_tokens(t_lex *t);
 void			ft_free_files(t_file *files);
 void			ft_create_heredoc(char *delimiter, char *filename);
+int			get_fd(t_file *file);
+int			forking(t_command *cmd1, t_command *cmd2);
+int			run_commands(t_command *cmd);
 
 #endif

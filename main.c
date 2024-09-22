@@ -85,6 +85,23 @@ void	ft_print_files(t_file *files)
 	}
 }
 
+void	ft_print_fds(t_file *files)
+{
+	int	fd;
+
+	if (files)
+		while (files->prev != NULL)
+			files = files->prev;
+	while (files != NULL)
+	{
+		fd = get_fd(files);
+		ft_printf("fd: %d\n", fd);
+		if (fd > 2)
+			close(fd);
+		files = files->next;
+	}
+}
+
 int	main(void)
 {
 	t_lex			*tokens;
@@ -107,8 +124,10 @@ int	main(void)
 			free(cmd);
 			ft_print_tokens(tokens);
 			table = ft_add_commands(tokens);
+			run_commands(table->commands);
 			ft_print_table(table);
 			ft_print_files(table->files);
+		//	ft_print_fds(table->files);
 			puts("");
 			ft_free_files(table->files);
 			ft_free_commands(table->commands);
