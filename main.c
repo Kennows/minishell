@@ -85,7 +85,11 @@ int	main(int argc, char **argv, char **envp)
 	if (table)
 	{
 		ft_minishell(table);
+		if (table->envp)
+			ft_free_array(table->envp);
+		ft_free_files(&table->files);
 		free(table);
+		rl_clear_history();
 	}
 	return (0);
 }

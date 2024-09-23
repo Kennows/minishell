@@ -39,31 +39,30 @@ char	*ft_remove_heredoc_quotes(char *str, char *new, char q, int *start)
 	return (new);
 }
 
-char	*ft_handle_heredoc_quotes(char *str, int start)
+int	ft_handle_heredoc_quotes(char **str, int start)
 {
 	char	*new;
 
-	while (str[start] && str[start] != '"' && str[start] != '\'')
+	while (str[0][start] && str[0][start] != '"' && str[0][start] != '\'')
 		start++;
-	if (str[start] == '\0')
-	{
-		new = ft_strdup(str);
-		free(str);
-		return (new);
-	}
-	new = malloc(sizeof(char) * (ft_strlen(str) - 1));
+	if (str[0][start] == '\0')
+		return (1);
+	new = malloc(sizeof(char) * (ft_strlen(str[0]) - 1));
 	if (!new)
 	{
-		free(str);
+		free(str[0]);
+		str[0] = NULL;
 		write(2, "malloc failed while removing quotes\n", 36);
-		return (NULL);
+		return (0);
 	}
-	if (str[start] == '"')
-		new = ft_remove_heredoc_quotes(str, new, '"', &start);
-	else if (str[start] == '\'')
-		new = ft_remove_heredoc_quotes(str, new, '\'', &start);
+	if (str[0][start] == '"')
+		new = ft_remove_heredoc_quotes(str[0], new, '"', &start);
+	else if (str[0][start] == '\'')
+		new = ft_remove_heredoc_quotes(str[0], new, '\'', &start);
 	if (new[start] != '\0')
-		new = ft_handle_heredoc_quotes(new, start);
-	free(str);
-	return (new);
+		if (!ft_handle_heredoc_quotes(&new, start))
+			return (0);
+	free(str[0]);
+	str[0] = new;
+	return (1);
 }

@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 18:53:06 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/28 17:32:45 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/23 15:23:40 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ char	*ft_heredoc_name(void)
 	char		*ret;
 	char		*num;
 
+	ret = NULL;
 	if (i == 1)
 	{
 		ret = ft_strdup(".heredoc");
@@ -59,15 +60,13 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted, \
 			free(buf);
 			if (!*str)
 				return (0);
+			continue ;
 		}
+		if (buf)
+			free(buf);
 		else
-		{
-			if (buf)
-				free(buf);
-			else
-				ft_print_heredoc_warning(delimiter);
-			return (1);
-		}
+			ft_print_heredoc_warning(delimiter);
+		return (1);
 	}
 }
 
@@ -81,12 +80,8 @@ int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 	str = NULL;
 	if (!ft_strchr(*delim, '"') && !ft_strchr(*delim, '\''))
 		quoted = 0;
-	else
-	{
-		*delim = ft_handle_heredoc_quotes(&**delim, 0);
-		if (!*delim)
+	else if (!ft_handle_heredoc_quotes(&*delim, 0))
 			return (0);
-	}
 	exit_status = ft_readline_heredoc(&str, *delim, quoted, table);
 	if (!exit_status)
 		return (0);
@@ -132,7 +127,7 @@ int	ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table)
 		write(2, "malloc failed while creating heredoc\n", 37);
 		return (0);
 	}
-	temp = ft_new_heredoc_file(&temp, &name, table);
+	temp = ft_new_heredoc_file(&temp, &name);
 	if (!temp)
 		return (0);
 	if (!ft_create_heredoc(&(*token)->next->str, name, table))

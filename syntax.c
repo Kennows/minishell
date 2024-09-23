@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/26 11:55:02 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/18 19:55:23 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/23 15:25:09 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,14 +49,13 @@ int	ft_redir_syntax_check(t_lex **token, t_command **cmd, \
 	{
 		write(2, "minishell: ", 11);
 		if ((*token)->type == REDIR_IN)
-			 write(2, "syntax error near unexpected token `<'\n", 39);
+			write(2, "syntax error near unexpected token `<'\n", 39);
 		else if ((*token)->type == REDIR_OUT)
 			write(2, "syntax error near unexpected token `>'\n", 39);
 		else if ((*token)->type == APPEND)
 			write(2, "syntax error near unexpected token `>>'\n", 40);
 		else if ((*token)->type == HERE_DOC)
 			write(2, "syntax error near unexpected token `<<'\n", 40);
-		ft_free_all(*token, *cmd, *table);
 		(*table)->exit_status = 2;
 		return (0);
 	}

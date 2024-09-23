@@ -140,8 +140,7 @@ int				ft_handle_env(t_lex *token, t_command *cmd, t_command_table *t);
 char			*ft_expand_file_name(char *str, t_lex *token, \
 									t_command_table *table);
 void			ft_add_file_to_list(t_command_table *table, t_file *temp);
-t_file			*ft_new_heredoc_file(t_file **file, char **name, \
-										t_command_table *table);
+t_file			*ft_new_heredoc_file(t_file **file, char **name);
 void			ft_command_type(t_command *cmd);
 int				ft_is_whitespace(char c);
 char			*ft_getenv(char *str, char **envp);
@@ -171,7 +170,7 @@ int				ft_word_split(char ***dest, char const *s);
 int				ft_append_empty_arr(char ***arr, char *str);
 char			*ft_remove_heredoc_quotes(char *str, char *new, char q, \
 											int *start);
-char			*ft_handle_heredoc_quotes(char *str, int start);
+int				ft_handle_heredoc_quotes(char **str, int start);
 int				ft_find_env_start(char *str, int i);
 int				ft_find_env_end(char *str, int start);
 int				ft_find_quote_end_index(const char *s, char q, int start);

@@ -75,13 +75,16 @@ void	ft_free_array(char **arr)
 	int	i;
 
 	i = 0;
-	while (arr[i] != NULL)
+	if (arr != NULL)
 	{
-		free(arr[i]);
-		arr[i++] = NULL;
+		while (arr[i] != NULL)
+		{
+			free(arr[i]);
+			arr[i++] = NULL;
+		}
+		free(arr);
+		arr = NULL;
 	}
-	free(arr);
-	arr = NULL;
 }
 
 static char	**ft_help_split(char **dst, char const *s)

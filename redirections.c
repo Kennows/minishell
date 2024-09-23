@@ -12,29 +12,27 @@
 
 #include "minishell.h"
 
-t_file	*ft_new_heredoc_file(t_file **file, char **name, t_command_table *table)
+t_file	*ft_new_heredoc_file(t_file **file, char **name)
 {
 	*file = malloc(sizeof(t_file));
 	if (!*file)
 	{
 		write(2, "malloc failed while listing files\n", 34);
-		ft_free_all(table->commands->token_start, table->commands, table);
-		free(*file);
 		free(*name);
 		return (NULL);
 	}
+	(*file)->name = NULL;
+	(*file)->type = OPEN;
+	(*file)->next = NULL;
+	(*file)->prev = NULL;	
 	(*file)->name = ft_strdup(*name);
 	if (!(*file)->name)
 	{
-		ft_free_all(table->commands->token_start, table->commands, table);
 		free(*file);
 		free(*name);
 		write(2, "ft_strdup failed while creating heredoc file\n", 45);
 		return (NULL);
 	}
-	(*file)->type = OPEN;
-	(*file)->next = NULL;
-	(*file)->prev = NULL;
 	return (*file);
 }
 
@@ -45,7 +43,6 @@ t_file	*ft_new_file(t_file *file, t_lex *token, t_token_type type, \
 	if (!file)
 	{
 		write(2, "malloc failed while listing files\n", 34);
-		ft_free_all(table->commands->token_start, table->commands, table);
 		return (NULL);
 	}
 	file->name = ft_expand_file_name(token->str, token, table);
@@ -54,7 +51,6 @@ t_file	*ft_new_file(t_file *file, t_lex *token, t_token_type type, \
 		if (file->name)
 			free(file->name);
 		free(file);
-		ft_free_all(table->commands->token_start, table->commands, table);
 		return (NULL);
 	}
 	if (type == REDIR_IN)

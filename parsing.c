@@ -102,7 +102,10 @@ int	ft_add_commands(t_command_table **table, t_lex **tokens)
 		return (0);
 	command = (*table)->commands;
 	if (!ft_parse_redirections(command, *table))
-		return (0);
+	{
+		ft_free_all((*table)->commands->token_start, command, *table);
+		return (0);		
+	}
 	if (!ft_parse_cmds_and_args(command, *table))
 	{
 		write(2, "error parsing commands and arguments\n", 37);
