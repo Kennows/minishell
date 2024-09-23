@@ -61,8 +61,6 @@ void	ft_token_type(t_lex *token)
 			!ft_strncmp(token->str, "env", 4) || \
 			!ft_strncmp(token->str, "exit", 5))
 		token->type = BUILT_IN;
-	else if (ft_isnumber(token->str))
-		token->type = NUMBER;
 	else
 		token->type = WORD;
 }

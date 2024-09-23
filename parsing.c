@@ -49,8 +49,7 @@ int	ft_parse_redirections(t_command *cmd, t_command_table *table)
 	while (current_token != NULL && cmd->token_end != NULL && \
 		current_token->index <= cmd->token_end->index)
 	{
-		if (current_token->type == WORD || current_token->type == NUMBER || \
-			current_token->type == BUILT_IN)
+		if (current_token->type == WORD || current_token->type == BUILT_IN)
 			current_token = current_token->next;
 		else if (!ft_handle_redir(cmd, &current_token, table))
 			return (0);

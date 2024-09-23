@@ -46,4 +46,5 @@ void	ft_init_table(t_command_table *table)
 	table->commands = NULL;
 	table->files = NULL;
 	table->envp = NULL;
+	table->exit_status = 0;
 }

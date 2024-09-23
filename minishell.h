@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 16:54:44 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/18 19:50:56 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/23 15:24:32 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,10 @@
 # include "libft/libft.h"
 # include <readline/readline.h>
 # include <readline/history.h>
-#include <sys/ioctl.h>
+# include <sys/ioctl.h>
 # include <fcntl.h>
 # include <signal.h>
+# include <sys/wait.h>
 
 typedef enum e_token_type
 {
@@ -30,7 +31,6 @@ typedef enum e_token_type
 	APPEND,
 	PIPE,
 	BUILT_IN,
-	NUMBER,
 	WORD,
 }	t_token_type;
 
@@ -184,5 +184,8 @@ void			ft_print_redir_env_error(char *str);
 void			ft_print_heredoc_warning(char *delimiter);
 t_sub_tok		*ft_remove_subtoken(t_sub_tok *subtoken);
 int				ft_strchr_index(const char *s, int c);
+int				get_fd(t_file *file);
+int				open_file(t_file *file);
+int 			run_commands(t_command *cmd, t_command_table *table);
 
 #endif
