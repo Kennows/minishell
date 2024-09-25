@@ -22,7 +22,7 @@ t_file	*ft_new_heredoc_file(t_file **file, char **name)
 		return (NULL);
 	}
 	(*file)->name = NULL;
-	(*file)->type = OPEN;
+	(*file)->type = HEREDOC;
 	(*file)->next = NULL;
 	(*file)->prev = NULL;	
 	(*file)->name = ft_strdup(*name);

@@ -98,6 +98,8 @@ void	ft_free_files(t_file **files)
 		while (*files != NULL)
 		{
 			temp = (*files)->next;
+			if ((*files)->type == HEREDOC)
+				unlink((*files)->name);
 			if ((*files)->name != NULL)
 				free((*files)->name);
 			free(*files);

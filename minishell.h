@@ -37,6 +37,7 @@ typedef enum e_token_type
 typedef enum e_file_type
 {
 	OPEN,
+	HEREDOC,
 	CREATE,
 	ADD_TO,
 }	t_file_type;
@@ -124,8 +125,7 @@ int				ft_create_heredoc(char **delimiter, char *filename, \
 char			*ft_heredoc_name(void);
 void			ft_sighandler(int signal);
 void			ft_heredoc_sighandler(int signal);
-void			ft_set_sig_handler(void);
-void			ft_set_heredoc_sig_handler(void);
+void			ft_set_sig_handler(int interactive);
 int				ft_pipe_syntax_check(t_lex **tokens, t_command **cmd, \
 										t_command_table *table);
 int				ft_redir_syntax_check(t_lex **token, t_command **cmd, \
@@ -185,6 +185,13 @@ t_sub_tok		*ft_remove_subtoken(t_sub_tok *subtoken);
 int				ft_strchr_index(const char *s, int c);
 int				get_fd(t_file *file);
 int				open_file(t_file *file);
-int 			run_commands(t_command *cmd, t_command_table *table);
+int 			run_commands(t_command_table *table);
+int				ft_get_path(char ***path_arr, t_command *cmd);
+int 			check_access(t_command *cmd, char **cmd_path, char **path_arr);
+void			ft_ignore_signals(void);
+int 			set_pipes(t_command *cmd, int pipe_fd[2]);
+int 			set_redirections(t_command *cmd);
+int				ft_prepare_path(t_command *cmd, char **cmd_path);
+int				ft_check_files(t_file *files);
 
 #endif

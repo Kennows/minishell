@@ -12,35 +12,6 @@
 
 #include "minishell.h"
 
-int	ft_execute(t_command_table *table)
-{
-	t_command	*cmd;
-	int		fd;
-
-	cmd = table->commands;
-	while (cmd != NULL)
-	{
-		if (cmd->redir_in_file != NULL)
-		{
-			fd = get_fd(cmd->redir_in_file);
-			dup2(fd, 0);
-			close(fd);
-		}
-		if (cmd->redir_out_file != NULL)
-		{
-			fd = get_fd(cmd->redir_out_file);
-			dup2(fd, 1);
-			close(fd);
-		}
-		table->exit_status = run_commands(cmd, table);
-		if (table->exit_status != 0)
-			return (table->exit_status);
-		
-		cmd = cmd->next;
-	}
-	return (0);
-}
-
 void	ft_minishell(t_command_table *table)
 {
 	t_lex	*tokens;
@@ -48,22 +19,21 @@ void	ft_minishell(t_command_table *table)
 
 	while (1)
 	{
-		ft_set_sig_handler();
+		ft_set_sig_handler(1);
 		if (table->exit_status)
 			printf("(%d)", table->exit_status);
 		cmd = readline("minishell$ ");
+		ft_set_sig_handler(0);
 		if (cmd == NULL)
-		{
-			printf("exit\n");
 			return ;
-		}
 		add_history(cmd);
 		tokens = ft_tokenize(cmd);
 		free(cmd);
 		if (!tokens || !ft_add_commands(&table, &tokens))
 			continue ;
-		if (ft_execute(table) == -1)
-			return ;
+		if (ft_check_files(table->files))
+			if (run_commands(table) == -1)
+				break ;
 		ft_free_files(&table->files);
 		ft_free_commands(&table->commands);
 		table->files = NULL;
@@ -90,6 +60,7 @@ int	main(int argc, char **argv, char **envp)
 		ft_free_files(&table->files);
 		free(table);
 		rl_clear_history();
+		printf("exit\n");
 	}
 	return (0);
 }

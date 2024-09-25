@@ -48,6 +48,5 @@ int	ft_exit(t_command_table *table)
 	ft_free_array(&*table->envp);
 	table->envp = NULL;
 	rl_clear_history();
-	printf("exit\n");
 	return (-1);
 }

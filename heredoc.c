@@ -46,7 +46,6 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted, \
 	char	*buf;
 
 	g_sig = 0;
-	ft_set_heredoc_sig_handler();
 	while (1)
 	{
 		if (g_sig == SIGINT)
