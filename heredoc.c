@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/01 18:53:06 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/23 15:23:40 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/26 11:40:11 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 	if (!ft_strchr(*delim, '"') && !ft_strchr(*delim, '\''))
 		quoted = 0;
 	else if (!ft_handle_heredoc_quotes(&*delim, 0))
-			return (0);
+		return (0);
 	exit_status = ft_readline_heredoc(&str, *delim, quoted, table);
 	if (!exit_status)
 		return (0);
@@ -89,6 +89,7 @@ int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 	if (str)
 	{
 		write(fd, str, ft_strlen(str));
+		write(fd, "\n", 1);
 		free(str);
 	}
 	return (1);

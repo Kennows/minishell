@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   signals.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/09/26 11:46:28 by nvallin           #+#    #+#             */
+/*   Updated: 2024/09/26 11:48:52 by nvallin          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-int g_sig;
+int	g_sig;
 
 void	ft_sighandler(int signal)
 {
@@ -16,10 +28,10 @@ void	ft_sighandler(int signal)
 void	ft_sighandler_non_interactive(int signal)
 {
 	if (signal == SIGINT)
-	{
+	{	
 		g_sig = SIGINT;
-		ioctl(0, TIOCSTI, "\n");
 		rl_replace_line("", 0);
+		ioctl(0, TIOCSTI, "\n");
 		rl_on_new_line();
 	}
 }
@@ -31,7 +43,6 @@ void	ft_set_sig_handler(int interactive)
 
 	if (interactive == 1)
 	{
-
 		act.sa_handler = ft_sighandler;
 		act.sa_flags = 0;
 		sigemptyset(&act.sa_mask);
@@ -42,7 +53,7 @@ void	ft_set_sig_handler(int interactive)
 		act.sa_handler = ft_sighandler_non_interactive;
 		act.sa_flags = 0;
 		sigemptyset(&act.sa_mask);
-		sigaction(SIGINT, &act, NULL);		
+		sigaction(SIGINT, &act, NULL);
 	}
 	sa.sa_handler = SIG_IGN;
 	sa.sa_flags = 0;
@@ -52,13 +63,11 @@ void	ft_set_sig_handler(int interactive)
 
 void	ft_ignore_signals(void)
 {
-	struct sigaction act;
+	struct sigaction	act;
 
-	act.sa_handler = SIG_IGN;  // Ignore signals
+	act.sa_handler = SIG_IGN;
 	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
-
-	// Ignore SIGINT (Ctrl+C) and SIGQUIT (Ctrl+\)
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGQUIT, &act, NULL);
 }

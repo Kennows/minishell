@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 16:54:44 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/23 15:24:32 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/26 11:41:33 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # include <fcntl.h>
 # include <signal.h>
 # include <sys/wait.h>
+# include <sys/types.h>
 
 typedef enum e_token_type
 {
@@ -90,6 +91,8 @@ typedef struct s_command_table
 	struct s_file		*files;
 	char				**envp;
 	int					exit_status;
+	int					saved_stdin;
+	int					saved_stdout;
 }		t_command_table;
 
 void			ft_free_tokens(t_lex **tokens);
@@ -152,7 +155,7 @@ int				ft_handle_env_heredoc(char **str, int start, \
 										t_command_table *table);
 int				ft_replace_env_value(char ***envp, char *new);
 int				ft_strcombine(char **dest, char *src);
-int				ft_builtin(t_command *cmd, t_command_table *table);
+int				ft_builtin(t_command *cmd);
 void			ft_env(char **env, int export);
 int				ft_echo(t_command *cmd);
 int				ft_cd(t_command *cmd);
@@ -185,12 +188,13 @@ t_sub_tok		*ft_remove_subtoken(t_sub_tok *subtoken);
 int				ft_strchr_index(const char *s, int c);
 int				get_fd(t_file *file);
 int				open_file(t_file *file);
-int 			run_commands(t_command_table *table);
+int				run_commands(t_command_table *table);
 int				ft_get_path(char ***path_arr, t_command *cmd);
-int 			check_access(t_command *cmd, char **cmd_path, char **path_arr);
+int				check_access(t_command *cmd, char **cmd_path, char **path_arr);
 void			ft_ignore_signals(void);
-int 			set_pipes(t_command *cmd, int pipe_fd[2]);
-int 			set_redirections(t_command *cmd);
+int				prepare_pipes(t_command *cmd, int *pipe_fd);
+void			set_pipeline(int pipe_in, int *pipe_fd);
+int				set_redirections(t_command *cmd);
 int				ft_prepare_path(t_command *cmd, char **cmd_path);
 int				ft_check_files(t_file *files);
 

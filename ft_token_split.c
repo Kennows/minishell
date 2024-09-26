@@ -74,16 +74,19 @@ void	ft_free_array(char **arr)
 {
 	int	i;
 
-	i = 0;
-	if (arr != NULL)
+	if (arr && *arr)
 	{
-		while (arr[i] != NULL)
+		i = 0;
+		if (arr != NULL)
 		{
-			free(arr[i]);
-			arr[i++] = NULL;
+			while (arr[i] != NULL)
+			{
+				free(arr[i]);
+				arr[i++] = NULL;
+			}
+			free(arr);
+			arr = NULL;
 		}
-		free(arr);
-		arr = NULL;
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 17:15:17 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/18 19:41:06 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/26 11:49:23 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ int	ft_add_commands(t_command_table **table, t_lex **tokens)
 	if (!ft_parse_redirections(command, *table))
 	{
 		ft_free_all((*table)->commands->token_start, command, *table);
-		return (0);		
+		return (0);
 	}
 	if (!ft_parse_cmds_and_args(command, *table))
 	{

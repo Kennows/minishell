@@ -1,128 +1,124 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execution.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/09/26 11:32:47 by nvallin           #+#    #+#             */
+/*   Updated: 2024/09/26 11:56:57 by nvallin          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-int execute_builtin(t_command *cmd, t_command_table *table, int pipe_in, int pipe_out)
+int	execute_builtin(t_command *cmd, t_command_table *table)
 {
-    int saved_stdin;
-    int saved_stdout;
-
-    saved_stdin = dup(STDIN_FILENO);
-    saved_stdout = dup(STDOUT_FILENO);
-    if (pipe_in != -1)
-    {
-        dup2(pipe_in, STDIN_FILENO);
-        close(pipe_in);
-    }
-    if (pipe_out != -1)
-    {
-        dup2(pipe_out, STDOUT_FILENO);
-        close(pipe_out);
-    }
-    table->exit_status = set_redirections(cmd);
-    if (table->exit_status)
-        return (table->exit_status);
-    table->exit_status = ft_builtin(cmd, table);
-    dup2(saved_stdin, STDIN_FILENO);
-    dup2(saved_stdout, STDOUT_FILENO);
-    close(saved_stdin);
-    close(saved_stdout);
-    return (table->exit_status);
+	table->exit_status = set_redirections(cmd);
+	if (table->exit_status)
+	{
+		dup2(table->saved_stdout, STDOUT_FILENO);
+		dup2(table->saved_stdin, STDIN_FILENO);
+		perror("minishell: redirection");
+		return (table->exit_status);
+	}
+	table->exit_status = ft_builtin(cmd);
+	dup2(table->saved_stdout, STDOUT_FILENO);
+	dup2(table->saved_stdin, STDIN_FILENO);
+	return (table->exit_status);
 }
 
-void execute_command(t_command *cmd, int pipe_in, int pipe_out)
+int	execute_command(t_command *cmd, t_command_table *table)
 {
-    char *cmd_path;
+	char	*cmd_path;
 
 	cmd_path = NULL;
-	if (!ft_prepare_path(cmd, &cmd_path))
+	table->exit_status = ft_prepare_path(cmd, &cmd_path);
+	if (table->exit_status != 1)
 	{
-		perror("minishell");
-		exit(1);
+		if (table->exit_status != 127)
+			perror("minishell");
+		return (table->exit_status);
 	}
-    // If this is not the first command in the pipeline, set up pipe for input
-    if (pipe_in != -1)
-    {
-        dup2(pipe_in, STDIN_FILENO);
-        close(pipe_in);
-    }
-    // If this is not the last command in the pipeline, set up pipe for output
-    if (pipe_out != -1)
-    {
-        dup2(pipe_out, STDOUT_FILENO);
-        close(pipe_out);
-    }
-    // Execute the command
-    if (set_redirections(cmd))
-        exit (1);
-    if (execve(cmd_path, cmd->argv, *cmd->envp) == -1)
-    {
-        perror("Execution error");
-        free(cmd_path);
-        exit(1);
-    }
-    free(cmd_path);
+	if (set_redirections(cmd))
+	{
+		free(cmd_path);
+		perror("minishell: redirection");
+		return (-1);
+	}
+	if (execve(cmd_path, cmd->argv, *cmd->envp) == -1)
+	{
+		perror("Execution error");
+		free(cmd_path);
+		return (-1);
+	}
+	free(cmd_path);
+	return (0);
 }
 
-int fork_and_execute(t_command *cmd, t_command_table *table, \
-						int pipe_in, int pipe_out)
+int	fork_and_execute(t_command *cmd, t_command_table *table, \
+						int pipe_in, int *pipe_fd)
 {
-    pid_t pid;
-	
+	pid_t	pid;
+
 	pid = fork();
-    if (pid < 0)
-    {
-        perror("Fork error");
-        return (-1);
-    }
-    if (pid == 0)
-    {
+	if (pid < 0)
+	{
+		perror("Fork error");
+		return (-1);
+	}
+	if (pid == 0)
+	{
+		set_pipeline(pipe_in, pipe_fd);
 		if (cmd->type == BUILT_IN)
-			execute_builtin(cmd, table, pipe_in, pipe_out);
+			execute_builtin(cmd, table);
 		else
-        	execute_command(cmd, pipe_in, pipe_out);
-        exit(0); // Ensure child exits after execution
-    }
-    else
-    {
-        ft_ignore_signals(); // Ignore signals in parent
-        if (pipe_in != -1)
-            close(pipe_in); // Close input pipe after use
-    }
-    return (0);
+			table->exit_status = execute_command(cmd, table);
+		ft_exit(table);
+		exit(0);
+	}
+	else
+	{
+		ft_ignore_signals();
+		if (pipe_in != -1)
+			close(pipe_in);
+	}
+	return (0);
 }
 
-void wait_for_children()
+void	wait_for_children(void)
 {
-    int status;
+	int	status;
 
-    while (wait(&status) > 0)
-        continue;
+	while (wait(&status) > 0)
+		continue ;
 }
 
-int run_commands(t_command_table *table)
+int	run_commands(t_command_table *table)
 {
-    t_command *cmd;
-    int pipe_fd[2];
-    int pipe_in;
+	t_command	*cmd;
+	int			pipe_fd[2];
+	int			pipe_in;
 
-	pipe_in = -1;  // Initial input is from stdin
-    cmd = table->commands;
-    while (cmd)
-    {
-        if (set_pipes(cmd, pipe_fd) == -1)
-            return (2);
-        if (cmd == table->commands && !cmd->pipe_out && cmd->type == BUILT_IN)
-        {
-            if (execute_builtin(cmd, table, pipe_in, pipe_fd[1]) == -1)
-                return (-1);
-        }
-		else if (fork_and_execute(cmd, table, pipe_in, pipe_fd[1]) == -1)
+	pipe_in = -1;
+	cmd = table->commands;
+	while (cmd)
+	{
+		if (prepare_pipes(cmd, pipe_fd) == -1)
+			return (2);
+		if (cmd == table->commands && !cmd->pipe_out && cmd->type == BUILT_IN)
+		{
+			if (execute_builtin(cmd, table) == -1)
+				return (-1);
+		}
+		else if (fork_and_execute(cmd, table, pipe_in, pipe_fd) == -1 \
+					|| table->exit_status)
 			return (2);
 		if (pipe_fd[1] != -1)
 			close(pipe_fd[1]);
-        // The next command's input will be this command's output
-        pipe_in = pipe_fd[0];
-        cmd = cmd->pipe_out;
-    }
-    wait_for_children();
-    return (0);
+		pipe_in = pipe_fd[0];
+		cmd = cmd->pipe_out;
+	}
+	wait_for_children();
+	return (0);
 }

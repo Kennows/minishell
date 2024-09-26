@@ -105,7 +105,7 @@ int	ft_cd(t_command *cmd)
 	return (1);
 }
 
-int	ft_builtin(t_command *cmd, t_command_table *table)
+int	ft_builtin(t_command *cmd)
 {
 	int	result;
 
@@ -127,6 +127,6 @@ int	ft_builtin(t_command *cmd, t_command_table *table)
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "echo", 5))
 		result = ft_echo(cmd);
 	if (cmd->argv && !ft_strncmp(cmd->argv[0], "exit", 5))
-		result = ft_exit(table);
+		result = -1;
 	return (result);
 }

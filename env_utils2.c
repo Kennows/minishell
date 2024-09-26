@@ -68,21 +68,8 @@ int	ft_is_env_quoted(char *str, int start)
 
 int	ft_find_env_start(char *str, int i)
 {
-	static int	quoted = 0;
-
 	while (str[i] != '\0' && str[i] != '$')
-	{
-		if (str[i] == '"' && quoted == 0)
-			quoted = 1;
-		else if (str[i] == '"' && quoted == 1)
-			quoted = 0;
-		if (str[i] == '\'' && quoted == 0)
-			while (str[++i] != '\'' && str[i] != '\0')
-				continue ;
-		if (str[i] == '\0')
-			break ;
 		i++;
-	}
 	return (i);
 }
 
@@ -91,6 +78,12 @@ int	ft_find_env_end(char *str, int start)
 	int	end;
 
 	end = start + 1;
+	if (str[end] != '_' && !ft_isalpha(str[end]))
+	{
+		if (str[end] != '\0')
+			return (end + 1);
+		return (end);
+	}
 	while (str[end] && (ft_isalnum(str[end]) || str[end] == '_'))
 		end++;
 	return (end);

@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/10 14:56:25 by nvallin           #+#    #+#             */
-/*   Updated: 2024/09/18 19:40:09 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/26 11:32:38 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int	ft_getnenv(char *str, char **env, int n, t_command_table *table)
 			{
 				write(2, "ft_strdup failed in ft_getenv\n", 30);
 				free(temp);
-				return (0);	
+				return (0);
 			}
 		}
 		free(temp);

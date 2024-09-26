@@ -47,4 +47,6 @@ void	ft_init_table(t_command_table *table)
 	table->files = NULL;
 	table->envp = NULL;
 	table->exit_status = 0;
+	table->saved_stdin = dup(STDIN_FILENO);
+	table->saved_stdout = dup(STDOUT_FILENO);
 }

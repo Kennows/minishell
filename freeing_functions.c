@@ -40,7 +40,7 @@ void	ft_free_tokens(t_lex **tokens)
 {
 	t_lex	*temp;
 
-	if (*tokens)
+	if (tokens && *tokens)
 	{
 		while ((*tokens)->prev != NULL)
 			*tokens = (*tokens)->prev;
@@ -68,23 +68,26 @@ void	ft_free_commands(t_command **cmd)
 	int			i;
 	t_command	*temp;
 
-	while ((*cmd)->prev != NULL)
-		*cmd = (*cmd)->prev;
-	while (cmd && *cmd)
+	if (cmd && *cmd != NULL)
 	{
-		i = 0;
-		temp = (*cmd)->next;
-		if ((*cmd)->argv != NULL)
+		while ((*cmd)->prev != NULL)
+			*cmd = (*cmd)->prev;
+		while (cmd && *cmd)
 		{
-			while ((*cmd)->argv[i] != NULL)
-				free((*cmd)->argv[i++]);
-			free((*cmd)->argv);
+			i = 0;
+			temp = (*cmd)->next;
+			if ((*cmd)->argv != NULL)
+			{
+				while ((*cmd)->argv[i] != NULL)
+					free((*cmd)->argv[i++]);
+				free((*cmd)->argv);
+			}
+			free(*cmd);
+			*cmd = temp;
 		}
-		free(*cmd);
-		*cmd = temp;
+		temp = NULL;
+		*cmd = NULL;
 	}
-	temp = NULL;
-	*cmd = NULL;
 }
 
 void	ft_free_files(t_file **files)

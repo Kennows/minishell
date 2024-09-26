@@ -34,3 +34,19 @@ void	ft_print_heredoc_warning(char *delimiter)
 		write(2, &delimiter[i++], 1);
 	write(2, "')\n", 3);
 }
+
+void	set_pipeline(int pipe_in, int *pipe_fd)
+{
+	if (pipe_in != -1)
+	{
+		dup2(pipe_in, STDIN_FILENO);
+		close(pipe_in);
+	}
+	if (pipe_fd[1] != -1)
+	{
+		dup2(pipe_fd[1], STDOUT_FILENO);
+		close(pipe_fd[1]);
+	}
+	if (pipe_fd[0] != -1)
+		close(pipe_fd[0]);
+}

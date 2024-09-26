@@ -6,7 +6,7 @@
 /*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 11:45:09 by nvallin           #+#    #+#             */
-/*   Updated: 2024/08/29 14:26:25 by nvallin          ###   ########.fr       */
+/*   Updated: 2024/09/26 11:46:22 by nvallin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ t_file	*ft_new_heredoc_file(t_file **file, char **name)
 	(*file)->name = NULL;
 	(*file)->type = HEREDOC;
 	(*file)->next = NULL;
-	(*file)->prev = NULL;	
+	(*file)->prev = NULL;
 	(*file)->name = ft_strdup(*name);
 	if (!(*file)->name)
 	{

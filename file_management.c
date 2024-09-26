@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   file_management.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nvallin <nvallin@student.hive.fi>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/09/26 11:38:47 by nvallin           #+#    #+#             */
+/*   Updated: 2024/09/26 11:53:37 by nvallin          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 int	ft_check_files(t_file *files)
@@ -9,17 +21,18 @@ int	ft_check_files(t_file *files)
 	while (current)
 	{
 		if (current->type == ADD_TO)
-            fd = open(current->name, O_WRONLY | O_CREAT | O_APPEND, 0644);
-        else if (current->type == CREATE)
-            fd = open(current->name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			fd = open(current->name, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		else if (current->type == CREATE)
+			fd = open(current->name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		else if (current->type == OPEN)
 			fd = open(current->name, O_RDONLY);
-		if (fd < 0)
+		if (current->type != HEREDOC && fd < 0)
 		{
 			perror("minishell");
 			return (0);
 		}
-		close(fd);
+		if (current->type != HEREDOC)
+			close(fd);
 		current = current->next;
 	}
 	return (1);
@@ -57,7 +70,7 @@ int	get_fd(t_file *file)
 	else if (file->type == CREATE)
 	{
 		if (access(file->name, F_OK) == 0 && access(file->name, W_OK) != 0)
-		       return (-1); //no permission error	
+			return (-1); //no permission error	
 		fd = open_file(file);
 	}
 	else

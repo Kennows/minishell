@@ -43,10 +43,17 @@ int	ft_echo(t_command *cmd)
 
 int	ft_exit(t_command_table *table)
 {
-	ft_free_files(&table->files);
-	ft_free_commands(&table->commands);
-	ft_free_array(&*table->envp);
-	table->envp = NULL;
+	if (table)
+	{
+		ft_free_files(&table->files);
+		ft_free_commands(&table->commands);
+		ft_free_array(&*table->envp);
+		table->envp = NULL;
+		close(table->saved_stdin);
+		close(table->saved_stdout);
+		free(table);
+		table = NULL;
+	}
 	rl_clear_history();
 	return (-1);
 }
