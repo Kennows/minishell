@@ -35,7 +35,7 @@ int	ft_replace_var(char **str, int start, t_command_table *table)
 			start = ft_find_env_start(str[0], start);
 		}
 		else if (str[0][start] != '\0')
-			start++;
+			start = ft_find_env_start(str[0], end);
 	}
 	return (1);
 }

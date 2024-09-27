@@ -155,14 +155,14 @@ int				ft_handle_env_heredoc(char **str, int start, \
 										t_command_table *table);
 int				ft_replace_env_value(char ***envp, char *new);
 int				ft_strcombine(char **dest, char *src);
-int				ft_builtin(t_command *cmd);
+int				ft_builtin(t_command *cmd, t_command_table *table);
 void			ft_env(char **env, int export);
 int				ft_echo(t_command *cmd);
-int				ft_cd(t_command *cmd);
-int				ft_pwd(void);
-int				ft_export(t_command *cmd);
-int				ft_unset(t_command *cmd);
-int				ft_exit(t_command_table *table);
+int				ft_cd(t_command *cmd, t_command_table *table);
+int				ft_pwd(t_command_table *table);
+int				ft_export(t_command *cmd, t_command_table *table);
+int				ft_unset(t_command *cmd, t_command_table *table);
+int				ft_exit(t_command *cmd, t_command_table *table);
 int				ft_arrlen(char **arr);
 char			**ft_create_envp(char **mini_envp, char **envp, char *shell);
 char			**ft_envpdup(char **envp);
@@ -178,7 +178,6 @@ int				ft_find_env_start(char *str, int i);
 int				ft_find_env_end(char *str, int start);
 int				ft_find_quote_end_index(const char *s, char q, int start);
 char			*ft_strldup(const char *s1, size_t len);
-int				ft_is_env_quoted(char *str, int start);
 char			*ft_strappend(char *dest, char *src);
 int				ft_strprepend(char **str, char *prefix);
 void			ft_init_table(t_command_table *table);
@@ -197,5 +196,7 @@ void			set_pipeline(int pipe_in, int *pipe_fd);
 int				set_redirections(t_command *cmd);
 int				ft_prepare_path(t_command *cmd, char **cmd_path);
 int				ft_check_files(t_file *files);
+int				ft_cleanup(t_command_table *table);
+void			ft_print_exit_warning(char *arg);
 
 #endif

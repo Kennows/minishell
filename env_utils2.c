@@ -40,32 +40,6 @@ int	ft_replace_env_value(char ***envp, char *new)
 	return (0);
 }
 
-int	ft_is_env_quoted(char *str, int start)
-{
-	int	i;
-	int	d_quoted;
-	int	s_quoted;
-
-	i = 0;
-	d_quoted = 0;
-	s_quoted = 0;
-	while (str[i] && i < start)
-	{
-		if (str[i] == '"' && d_quoted == 0 && s_quoted == 0)
-			d_quoted = 1;
-		else if (str[i] == '"' && d_quoted == 1)
-			d_quoted = 0;
-		if (str[i] == '\'' && s_quoted == 0 && d_quoted == 0)
-			s_quoted = 1;
-		else if (str[i] == '\'' && s_quoted == 1)
-			s_quoted = 0;
-		i++;
-	}
-	if (d_quoted || s_quoted)
-		return (1);
-	return (0);
-}
-
 int	ft_find_env_start(char *str, int i)
 {
 	while (str[i] != '\0' && str[i] != '$')
@@ -80,7 +54,7 @@ int	ft_find_env_end(char *str, int start)
 	end = start + 1;
 	if (str[end] != '_' && !ft_isalpha(str[end]))
 	{
-		if (str[end] != '\0')
+		if (str[end] != '\0' && !ft_is_whitespace(str[end]))
 			return (end + 1);
 		return (end);
 	}

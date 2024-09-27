@@ -44,7 +44,9 @@ void	ft_minishell(t_command_table *table)
 int	main(int argc, char **argv, char **envp)
 {
 	t_command_table	*table;
+	int				status;
 
+	status = 0;
 	if (argc != 1 || argv[1])
 	{
 		write(2, "please execute with no arguments!\n", 34);
@@ -55,8 +57,9 @@ int	main(int argc, char **argv, char **envp)
 	if (table)
 	{
 		ft_minishell(table);
-		ft_exit(table);
+		status = ft_cleanup(table);
+		free(table);
 		printf("exit\n");
 	}
-	return (0);
+	return (status);
 }

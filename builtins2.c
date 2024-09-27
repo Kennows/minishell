@@ -41,19 +41,55 @@ int	ft_echo(t_command *cmd)
 	return (0);
 }
 
-int	ft_exit(t_command_table *table)
+int	ft_cleanup(t_command_table *table)
 {
+	int	status;
+
+	status = 0;
 	if (table)
 	{
-		ft_free_files(&table->files);
-		ft_free_commands(&table->commands);
-		ft_free_array(&*table->envp);
+		status = table->exit_status;
+		if (table->files)
+			ft_free_files(&table->files);
+		if (table->commands)
+			ft_free_commands(&table->commands);
+		if (table->envp)
+			ft_free_array(&*table->envp);
 		table->envp = NULL;
+	//	dup(table->saved_stdin);
+	//	dup(table->saved_stdout);
 		close(table->saved_stdin);
 		close(table->saved_stdout);
-		free(table);
-		table = NULL;
+		rl_clear_history();
 	}
-	rl_clear_history();
+	return (status);
+}
+
+int	ft_exit(t_command *cmd, t_command_table *table)
+{
+	int	status;
+
+	status = 0;
+	if (table)
+	{
+		if (cmd->argc > 2)
+		{
+			write(2, "minishell: exit: too many arguments\n", 36);
+			table->exit_status = 1;
+			return (1);
+		}
+		if (cmd->argc == 2)
+		{
+			if (ft_isnumber(cmd->argv[1]))
+				status = ft_atoi(cmd->argv[1]);
+			else
+			{
+				ft_print_exit_warning(cmd->argv[1]);
+				status = 2;
+			}
+		}
+		table->exit_status = status; 
+		ft_cleanup(table);
+	}
 	return (-1);
 }

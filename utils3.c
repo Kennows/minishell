@@ -35,6 +35,17 @@ void	ft_print_heredoc_warning(char *delimiter)
 	write(2, "')\n", 3);
 }
 
+void	ft_print_exit_warning(char *arg)
+{
+	int	i;
+
+	i = 0;
+	write(2,"minishell: exit: ", 18);
+	while (arg[i])
+		write(2, &arg[i++], 1);
+	write(2, ": numeric argument required\n", 28);
+}
+
 void	set_pipeline(int pipe_in, int *pipe_fd)
 {
 	if (pipe_in != -1)

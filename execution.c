@@ -14,18 +14,16 @@
 
 int	execute_builtin(t_command *cmd, t_command_table *table)
 {
+	int result;
+
 	table->exit_status = set_redirections(cmd);
 	if (table->exit_status)
 	{
-		dup2(table->saved_stdout, STDOUT_FILENO);
-		dup2(table->saved_stdin, STDIN_FILENO);
 		perror("minishell: redirection");
 		return (table->exit_status);
 	}
-	table->exit_status = ft_builtin(cmd);
-	dup2(table->saved_stdout, STDOUT_FILENO);
-	dup2(table->saved_stdin, STDIN_FILENO);
-	return (table->exit_status);
+	result = ft_builtin(cmd, table);
+	return (result);
 }
 
 int	execute_command(t_command *cmd, t_command_table *table)
@@ -60,6 +58,7 @@ int	fork_and_execute(t_command *cmd, t_command_table *table, \
 						int pipe_in, int *pipe_fd)
 {
 	pid_t	pid;
+	int		status;
 
 	pid = fork();
 	if (pid < 0)
@@ -74,8 +73,9 @@ int	fork_and_execute(t_command *cmd, t_command_table *table, \
 			execute_builtin(cmd, table);
 		else
 			table->exit_status = execute_command(cmd, table);
-		ft_exit(table);
-		exit(0);
+		status = ft_cleanup(table);
+		free(table);
+		exit(status);
 	}
 	else
 	{
@@ -86,12 +86,14 @@ int	fork_and_execute(t_command *cmd, t_command_table *table, \
 	return (0);
 }
 
-void	wait_for_children(void)
+void	wait_for_children(t_command_table *table)
 {
 	int	status;
 
 	while (wait(&status) > 0)
 		continue ;
+	if (WIFEXITED(status))
+		table->exit_status = WEXITSTATUS(status);
 }
 
 int	run_commands(t_command_table *table)
@@ -110,15 +112,17 @@ int	run_commands(t_command_table *table)
 		{
 			if (execute_builtin(cmd, table) == -1)
 				return (-1);
+			dup2(table->saved_stdout, STDOUT_FILENO);
+			dup2(table->saved_stdin, STDIN_FILENO);
+			return (table->exit_status);
 		}
-		else if (fork_and_execute(cmd, table, pipe_in, pipe_fd) == -1 \
-					|| table->exit_status)
-			return (2);
+		else if (fork_and_execute(cmd, table, pipe_in, pipe_fd) == -1)
+			return (-1);
 		if (pipe_fd[1] != -1)
 			close(pipe_fd[1]);
 		pipe_in = pipe_fd[0];
 		cmd = cmd->pipe_out;
 	}
-	wait_for_children();
-	return (0);
+	wait_for_children(table);
+	return (table->exit_status);
 }
