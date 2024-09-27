@@ -24,6 +24,8 @@
 # include <sys/wait.h>
 # include <sys/types.h>
 
+extern int g_sig;
+
 typedef enum e_token_type
 {
 	REDIR_IN,
@@ -67,6 +69,7 @@ typedef struct s_file
 	t_file_type		type;
 	struct s_file	*next;
 	struct s_file	*prev;
+	int				index;
 }	t_file;
 
 typedef struct s_command
@@ -79,8 +82,10 @@ typedef struct s_command
 	struct s_lex		*token_end;
 	struct s_command	*pipe_in;
 	struct s_command	*pipe_out;
-	t_file				*redir_in_file;
-	t_file				*redir_out_file;
+	t_file				*redir_in_start;
+	t_file				*redir_in_end;
+	t_file				*redir_out_start;
+	t_file				*redir_out_end;
 	struct s_command	*next;
 	struct s_command	*prev;
 }		t_command;
@@ -93,6 +98,7 @@ typedef struct s_command_table
 	int					exit_status;
 	int					saved_stdin;
 	int					saved_stdout;
+	pid_t				last_pid;
 }		t_command_table;
 
 void			ft_free_tokens(t_lex **tokens);
@@ -195,8 +201,13 @@ int				prepare_pipes(t_command *cmd, int *pipe_fd);
 void			set_pipeline(int pipe_in, int *pipe_fd);
 int				set_redirections(t_command *cmd);
 int				ft_prepare_path(t_command *cmd, char **cmd_path);
-int				ft_check_files(t_file *files);
 int				ft_cleanup(t_command_table *table);
 void			ft_print_exit_warning(char *arg);
+int				ft_check_files(t_command *cmd);
+int				ft_check_in_files(t_command *cmd);
+int				ft_check_out_files(t_command *cmd);
+void			wait_for_children(t_command_table *table);
+void			ft_handle_redir_helper(t_command *cmd, t_lex **token, \
+										t_file *temp);
 
 #endif

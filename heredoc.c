@@ -12,8 +12,6 @@
 
 #include "minishell.h"
 
-extern int	g_sig;
-
 char	*ft_heredoc_name(void)
 {
 	static int	i = 1;
@@ -48,24 +46,24 @@ int	ft_readline_heredoc(char **str, char *delimiter, int quoted, \
 	g_sig = 0;
 	while (1)
 	{
+		buf = readline(">");
 		if (g_sig == SIGINT)
 			return (130);
-		buf = readline(">");
 		if (buf && ft_strncmp(buf, delimiter, ft_strlen(delimiter) + 1))
 		{
 			if (!quoted && !ft_handle_env_heredoc(&buf, 0, table))
-				return (0);
+				return (1);
 			*str = ft_strappend(*str, buf);
 			free(buf);
 			if (!*str)
-				return (0);
+				return (1);
 			continue ;
 		}
 		if (buf)
 			free(buf);
 		else
 			ft_print_heredoc_warning(delimiter);
-		return (1);
+		return (0);
 	}
 }
 
@@ -73,7 +71,6 @@ int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 {
 	char	*str;
 	int		quoted;
-	int		exit_status;
 
 	quoted = 1;
 	str = NULL;
@@ -81,13 +78,14 @@ int	ft_write_in_heredoc(int fd, char **delim, t_command_table *table)
 		quoted = 0;
 	else if (!ft_handle_heredoc_quotes(&*delim, 0))
 		return (0);
-	exit_status = ft_readline_heredoc(&str, *delim, quoted, table);
-	if (!exit_status)
+	table->exit_status = ft_readline_heredoc(&str, *delim, quoted, table);
+	if (table->exit_status == 130)
+		dup2(table->saved_stdin, STDIN_FILENO);	
+	else if (table->exit_status)
 		return (0);
-	if (exit_status == 130)
-		table->exit_status = 130;
 	if (str)
 	{
+		printf("");
 		write(fd, str, ft_strlen(str));
 		write(fd, "\n", 1);
 		free(str);
@@ -137,7 +135,7 @@ int	ft_parse_heredoc(t_command *cmd, t_lex **token, t_command_table *table)
 		free(temp);
 		return (0);
 	}
-	cmd->redir_in_file = temp;
+	ft_handle_redir_helper(cmd, token, temp);
 	ft_add_file_to_list(table, temp);
 	*token = ft_remove_redirection(cmd, &*token);
 	free(name);

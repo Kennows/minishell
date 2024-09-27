@@ -40,7 +40,7 @@ void	ft_print_exit_warning(char *arg)
 	int	i;
 
 	i = 0;
-	write(2,"minishell: exit: ", 18);
+	write(2, "minishell: exit: ", 18);
 	while (arg[i])
 		write(2, &arg[i++], 1);
 	write(2, ": numeric argument required\n", 28);
@@ -60,4 +60,20 @@ void	set_pipeline(int pipe_in, int *pipe_fd)
 	}
 	if (pipe_fd[0] != -1)
 		close(pipe_fd[0]);
+}
+
+void	wait_for_children(t_command_table *table)
+{
+	int	status;
+	int	status_last;
+	int	i;
+
+	if (waitpid(-1, &i, WNOHANG) == 0)
+	{
+		waitpid(table->last_pid, &status_last, 0);
+		while (wait(&status) > 0)
+			continue ;
+		if (WIFEXITED(status_last))
+			table->exit_status = WEXITSTATUS(status_last);
+	}
 }

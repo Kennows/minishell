@@ -12,6 +12,8 @@
 
 #include "minishell.h"
 
+int g_sig = 0;
+
 void	ft_minishell(t_command_table *table)
 {
 	t_lex	*tokens;
@@ -20,8 +22,6 @@ void	ft_minishell(t_command_table *table)
 	while (1)
 	{
 		ft_set_sig_handler(1);
-		if (table->exit_status)
-			printf("(%d)", table->exit_status);
 		cmd = readline("minishell$ ");
 		ft_set_sig_handler(0);
 		if (cmd == NULL)
@@ -31,9 +31,10 @@ void	ft_minishell(t_command_table *table)
 		free(cmd);
 		if (!tokens || !ft_add_commands(&table, &tokens))
 			continue ;
-		if (ft_check_files(table->files))
-			if (run_commands(table) == -1)
-				break ;
+		if (run_commands(table) == -1)
+			break ;
+		dup2(table->saved_stdout, STDOUT_FILENO);
+		dup2(table->saved_stdin, STDIN_FILENO);
 		ft_free_files(&table->files);
 		ft_free_commands(&table->commands);
 		table->files = NULL;

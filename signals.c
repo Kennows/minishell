@@ -12,8 +12,6 @@
 
 #include "minishell.h"
 
-int	g_sig;
-
 void	ft_sighandler(int signal)
 {
 	if (signal == SIGINT)
@@ -31,8 +29,9 @@ void	ft_sighandler_non_interactive(int signal)
 	{	
 		g_sig = SIGINT;
 		rl_replace_line("", 0);
-		ioctl(0, TIOCSTI, "\n");
+		write(1, "\n", 1);
 		rl_on_new_line();
+		close(STDIN_FILENO);
 	}
 }
 

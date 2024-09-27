@@ -22,8 +22,10 @@ void	ft_init_command(t_command *cmd, t_command_table *table)
 	cmd->token_end = NULL;
 	cmd->pipe_in = NULL;
 	cmd->pipe_out = NULL;
-	cmd->redir_in_file = NULL;
-	cmd->redir_out_file = NULL;
+	cmd->redir_in_start = NULL;
+	cmd->redir_in_end = NULL;
+	cmd->redir_out_start = NULL;
+	cmd->redir_out_end = NULL;
 	cmd->next = NULL;
 	cmd->prev = NULL;
 }
@@ -49,4 +51,5 @@ void	ft_init_table(t_command_table *table)
 	table->exit_status = 0;
 	table->saved_stdin = dup(STDIN_FILENO);
 	table->saved_stdout = dup(STDOUT_FILENO);
+	table->last_pid = 0;
 }

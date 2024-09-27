@@ -19,7 +19,7 @@ int	ft_get_path(char ***path_arr, t_command *cmd)
 
 	i = 0;
 	path = ft_getenv("PATH", *cmd->envp);
-	if (path == NULL)
+	if (path == NULL || path[0] == '\0')
 	{
 		if (!ft_array_append(&path_arr[0], "/"))
 			return (0);
@@ -32,6 +32,7 @@ int	ft_get_path(char ***path_arr, t_command *cmd)
 	{
 		if (!ft_strcombine(&path_arr[0][i], "/"))
 		{
+			write(2, "ft_strcombine failed in ft_get_path\n", 36);
 			ft_free_array(path_arr[0]);
 			return (0);
 		}
@@ -65,37 +66,36 @@ int	check_access(t_command *cmd, char **cmd_path, char **path_arr)
 	}
 	ft_free_array(path_arr);
 	if (*cmd_path)
-		return (1);
-	return (0);
+		return (0);
+	return (1);
 }
 
 int	ft_prepare_path(t_command *cmd, char **cmd_path)
 {
 	char	**path_arr;
 
+	if (!cmd->argv)
+		return (0);
 	if (cmd->argv[0][0] == '/' || cmd->argv[0][0] == '.')
 	{
 		if (access(cmd->argv[0], F_OK) != 0 || access(cmd->argv[0], X_OK) != 0)
-			return (0);
+			return (1);
 		*cmd_path = ft_strdup(cmd->argv[0]);
 		if (*cmd_path)
-			return (1);
+			return (0);
 		write(2, "ft_strdup failed while creating cmd_path\n", 41);
-		return (0);
+		return (1);
 	}
 	path_arr = NULL;
 	if (!ft_get_path(&path_arr, cmd))
-	{
-		write(2, "error getting path\n", 19);
-		return (0);
-	}
-	if (!check_access(cmd, &*cmd_path, &*path_arr))
+		return (1);
+	if (check_access(cmd, &*cmd_path, &*path_arr))
 	{
 		write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
 		write(2, ": command not found\n", 20);
 		return (127);
 	}
-	return (1);
+	return (0);
 }
 
 int	set_redirections(t_command *cmd)
@@ -103,18 +103,18 @@ int	set_redirections(t_command *cmd)
 	int		fd;
 	t_file	*redir_out;
 
-	if (cmd->redir_in_file)
+	if (cmd->redir_in_end)
 	{
-		fd = open(cmd->redir_in_file->name, O_RDONLY);
+		fd = open(cmd->redir_in_end->name, O_RDONLY);
 		if (fd < 0)
 			return (1);
 		if (cmd->type != BUILT_IN)
 			dup2(fd, STDIN_FILENO);
 		close(fd);
 	}
-	if (cmd->redir_out_file)
+	if (cmd->redir_out_end)
 	{
-		redir_out = cmd->redir_out_file;
+		redir_out = cmd->redir_out_end;
 		if (redir_out->type == ADD_TO)
 			fd = open(redir_out->name, O_WRONLY | O_CREAT | O_APPEND, 0644);
 		else

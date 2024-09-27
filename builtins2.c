@@ -56,8 +56,6 @@ int	ft_cleanup(t_command_table *table)
 		if (table->envp)
 			ft_free_array(&*table->envp);
 		table->envp = NULL;
-	//	dup(table->saved_stdin);
-	//	dup(table->saved_stdout);
 		close(table->saved_stdin);
 		close(table->saved_stdout);
 		rl_clear_history();
@@ -88,7 +86,7 @@ int	ft_exit(t_command *cmd, t_command_table *table)
 				status = 2;
 			}
 		}
-		table->exit_status = status; 
+		table->exit_status = status;
 		ft_cleanup(table);
 	}
 	return (-1);

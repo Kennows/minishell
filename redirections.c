@@ -64,23 +64,6 @@ t_file	*ft_new_file(t_file *file, t_lex *token, t_token_type type, \
 	return (file);
 }
 
-void	ft_add_file_to_list(t_command_table *table, t_file *temp)
-{
-	t_file	*file;
-
-	file = NULL;
-	if (table->files == NULL)
-		table->files = temp;
-	else
-	{
-		file = table->files;
-		while (file->next != NULL)
-			file = file->next;
-		file->next = temp;
-		temp->prev = file;
-	}
-}
-
 t_lex	*ft_remove_redirection(t_command *cmd, t_lex **token)
 {
 	if (cmd->token_end == (*token)->next)
@@ -110,6 +93,30 @@ t_lex	*ft_remove_redirection(t_command *cmd, t_lex **token)
 	}
 }
 
+void	ft_handle_redir_helper(t_command *cmd, t_lex **token, t_file *temp)
+{
+	if ((*token)->type == REDIR_IN || (*token)->type == HERE_DOC)
+	{
+		if (!cmd->redir_in_start)
+		{
+			cmd->redir_in_start = temp;
+			cmd->redir_in_end = temp;
+		}
+		else
+			cmd->redir_in_end = temp;
+	}
+	else
+	{
+		if (!cmd->redir_out_start)
+		{
+			cmd->redir_out_start = temp;
+			cmd->redir_out_end = temp;
+		}
+		else
+			cmd->redir_out_end = temp;
+	}
+}
+
 int	ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table)
 {
 	t_file	*temp;
@@ -119,7 +126,8 @@ int	ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table)
 		return (0);
 	if ((*token)->type == HERE_DOC)
 	{
-		if (!ft_parse_heredoc(cmd, token, table) || table->exit_status)
+		if (!ft_parse_heredoc(cmd, token, table) || \
+			(table->exit_status && table->exit_status != 130))
 			return (0);
 		else
 			return (1);
@@ -127,10 +135,7 @@ int	ft_handle_redir(t_command *cmd, t_lex **token, t_command_table *table)
 	temp = ft_new_file(temp, &*(*token)->next, (*token)->type, table);
 	if (!temp)
 		return (0);
-	if ((*token)->type == REDIR_IN)
-		cmd->redir_in_file = temp;
-	else
-		cmd->redir_out_file = temp;
+	ft_handle_redir_helper(cmd, token, temp);
 	ft_add_file_to_list(table, temp);
 	*token = ft_remove_redirection(cmd, &*token);
 	return (1);

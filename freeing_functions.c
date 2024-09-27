@@ -81,6 +81,7 @@ void	ft_free_commands(t_command **cmd)
 				while ((*cmd)->argv[i] != NULL)
 					free((*cmd)->argv[i++]);
 				free((*cmd)->argv);
+				(*cmd)->argv = NULL;
 			}
 			free(*cmd);
 			*cmd = temp;
